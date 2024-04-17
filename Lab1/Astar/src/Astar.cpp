@@ -10,6 +10,13 @@ using namespace std;
 
 struct Map_Cell {
     int type;
+    /*
+     * 0 ：可通行
+       1 ：不可通行
+       2 ：补给点
+       3 ：起点
+       4 ：终点
+     */
     // TODO: 定义地图信息
 };
 
