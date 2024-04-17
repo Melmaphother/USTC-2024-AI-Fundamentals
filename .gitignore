@@ -1,2 +1,7 @@
-AStarAlgo/__pycache__
-AStarAlgo/.idea
+__pycache__
+.idea
+.vscode
+cmake-build-debug
+CMakeLists.txt
+Lab1/ref
+.vs
