@@ -9,7 +9,7 @@ class Point {
 private:
     int x{};
     int y{};
-    Point *parent{};
+    std::pair<int, int> parent{};
     int g{};
     int h{};
     int f{};
@@ -38,9 +38,9 @@ public:
 
     inline std::pair<int, int> getPos() const { return std::make_pair(x, y); }
 
-    inline void setParent(Point *_parent) { this->parent = _parent; }
+    inline void setParentPos(std::pair<int, int> _parent) { this->parent = _parent; }
 
-    inline Point *getParent() { return parent; }
+    inline std::pair<int, int> getParentPos() const { return parent; }
 
     inline void setG(int _g) {
         this->g = _g;

@@ -11,9 +11,11 @@ Astar::Astar(std::string &input_file, std::string &output_file) {
     step_nums = 0;
 
     this->output_file = output_file;
+    status = AStarInitialization;
 }
 
 void Astar::AstarSearch() {
+    status = AStarSearching;
     // 起点拥有最大的补给，将起点加入 open_list
     open_list.emplace(start, map.getSupply());
     while (!open_list.empty()) {
@@ -21,12 +23,15 @@ void Astar::AstarSearch() {
         // 取出并删去 multiset 中的第一个元素
         SearchPoint curr_point = *curr_point_pos;
         open_list.erase(curr_point_pos);
-        if (curr_point.first == end) {
-            std::cout << "Find the way!" << std::endl;
-            GetResult();
-        }
 
         close_list.push_back(curr_point);
+
+        if (curr_point.first == end) {
+            status = AStarFound;
+            GetResult();
+            return;
+        }
+
         auto neighbors = map.getNeighbors(curr_point.first);
         for (auto &neighbor: neighbors) {
             // 如果邻居点在 close_list 中，跳过
@@ -43,7 +48,7 @@ void Astar::AstarSearch() {
             }) != open_list.end()) {
                 if (neighbor_g < neighbor.getG()) {
                     neighbor.setG(neighbor_g);
-                    neighbor.setParent(&curr_point.first);
+                    neighbor.setParentPos(curr_point.first.getPos());
                 }
             } else {
                 neighbor.setG(neighbor_g);
@@ -52,17 +57,23 @@ void Astar::AstarSearch() {
                     continue;  // 不将neighbor加入open_list
                 }
                 neighbor.setH(neighbor_h);
-                neighbor.setParent(&curr_point.first);
+                neighbor.setParentPos(curr_point.first.getPos());
                 open_list.emplace(neighbor, neighbor_supply);
             }
         }
     }
+    status = AStarNotFound;
+    GetResult();
 }
 
 /**
  * @brief 启发式函数
  */
 int Astar::HeuristicFunction(Point &point, int curr_supply) {
+//    if (curr_supply <= 0) {
+//        return -1;
+//    }
+//    return point.distance(end);
     /**
      * 考虑到只能上下左右移动，在当前拥有的补给为 r 时，可到的范围是以当前点为中心的一个正方形（旋转 45 度），其对角线长度为 2r + 1
      * 设这个范围为 SupplyRegion，启发式函数设计如下：
@@ -107,19 +118,37 @@ void Astar::GetResult() {
      * step_nums = -1 代表无解
      * way 中存储路径，U 代表上，D 代表下，L 代表左，R 代表右
      */
-    if (close_list.empty()) {
+    if (status == AStarNotFound) {
         step_nums = -1;
-        return;
-    }
-    Point *cur = &close_list.back().first;
-    while (cur->getParent() != nullptr) {
-        Point *parent = cur->getParent();
-        if (parent->getX() == cur->getX() - 1) { way = "U" + way; }
-        else if (parent->getX() == cur->getX() + 1) { way = "D" + way; }
-        else if (parent->getY() == cur->getY() - 1) { way = "L" + way; }
-        else if (parent->getY() == cur->getY() + 1) { way = "R" + way; }
-        cur = parent;
-        step_nums++;
+    } else if (status == AStarFound) {
+        // 将 close_list 的 parent 写回到 map 中
+        for (auto &point: close_list) {
+            map.setParentToMap(point.first.getPos(), point.first.getParentPos());
+        }
+
+        // 反向遍历 close_list，获取路径
+        std::pair<int, int> curr_pos = end.getPos();
+        std::pair<int, int> parent_pos = map.getParentFromMap(curr_pos);
+        while (curr_pos != start.getPos()) {
+            if (curr_pos.first == parent_pos.first && curr_pos.second == parent_pos.second - 1) {
+                way = "D" + way;
+            } else if (curr_pos.first == parent_pos.first && curr_pos.second == parent_pos.second + 1) {
+                way = "U" + way;
+            } else if (curr_pos.first == parent_pos.first - 1 && curr_pos.second == parent_pos.second) {
+                way = "L" + way;
+            } else if (curr_pos.first == parent_pos.first + 1 && curr_pos.second == parent_pos.second) {
+                way = "R" + way;
+            } else {
+                std::cout << "Error: path is not valid!" << std::endl;
+                return;
+            }
+
+            curr_pos = parent_pos;
+            parent_pos = map.getParentFromMap(curr_pos);
+            step_nums++;
+        }
+    } else {
+        std::cout << "Error: status is not AStarFound or AStarNotFound!" << std::endl;
     }
     OutputToFile();
 }
@@ -133,12 +162,18 @@ void Astar::OutputToFile() {
         std::cout << "Error opening file!" << std::endl;
         return;
     }
-    if (step_nums == -1) {
+    if (status == AStarNotFound) {
         std::cout << "No way to go!" << std::endl;
         file << step_nums << std::endl;
-    } else {
+    } else if (status == AStarFound) {
+        std::cout << "Find the way!" << std::endl;
+        std::cout << "All cells: " << map.getMapSize() << std::endl;
+        std::cout << "Search cells: " << close_list.size() << std::endl;
+        std::cout << "Step nums: " << step_nums << std::endl;
         file << step_nums << std::endl;
         file << way << std::endl;
+    } else {
+        std::cout << "Error: status is not AStarFound or AStarNotFound!" << std::endl;
     }
     file.close();
 }
