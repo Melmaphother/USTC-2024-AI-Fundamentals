@@ -1,0 +1,5 @@
+# ninja log v5
+19	890	7351373318901302	CMakeFiles/Astar.dir/src/main.cpp.obj	73dbacf7115dd412
+12	966	7351373319694418	CMakeFiles/Astar.dir/src/Map.cpp.obj	2300cc3d198b7ad9
+1	1007	7351373320091925	CMakeFiles/Astar.dir/src/Astar.cpp.obj	81d8574eda06e105
+1007	1509	7351373324766815	Astar.exe	3ac5120b11e152bb

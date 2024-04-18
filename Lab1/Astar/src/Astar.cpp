@@ -5,10 +5,8 @@
 
 Astar::Astar(std::string &input_file, std::string &output_file) {
     map = Map(input_file);
-    start = map.getStart();
-    end = map.getEnd();
-    max_supply = map.getSupply();
-
+    start = Point(map.getStart());
+    end = Point(map.getEnd());
     step_nums = 0;
     std::make_heap(open_list.begin(), open_list.end(), CompareF());
 
@@ -17,7 +15,7 @@ Astar::Astar(std::string &input_file, std::string &output_file) {
 
 void Astar::AstarSearch() {
     // 起点拥有最大的补给，将起点加入 open_list
-    open_list.emplace_back(start, max_supply);
+    open_list.emplace_back(start, map.getSupply());
     std::push_heap(open_list.begin(), open_list.end(), CompareF());
     while (!open_list.empty()) {
         std::pop_heap(open_list.begin(), open_list.end(), CompareF()); // 将 open_list 中的最小值放到最后
@@ -36,21 +34,28 @@ void Astar::AstarSearch() {
             }) != close_list.end()) {
                 continue;
             }
-            int neighbor_g = curr_point.first->getG() + 1;
-            int neighbor_supply = neighbor->getType() == 2 ? max_supply : curr_point.second - 1;
+            int neighbor_g = curr_point.first.getG() + 1;
+            int neighbor_supply = neighbor.getType() == 2 ? map.getSupply() : curr_point.second - 1;
             // 如果邻居点在open_list中，说明已经计算过G值，这里需要判断新的G值是否更小
             if(std::find_if(open_list.begin(), open_list.end(), [neighbor](const SearchPoint &p) {
                 return p.first == neighbor;
             }) != open_list.end()) {
-                if (neighbor_g < neighbor->getG()) {
-                    neighbor->setG(neighbor_g);
-                    neighbor->setParent(curr_point.first);
+                if (neighbor_g < neighbor.getG()) {
+                    neighbor.setG(neighbor_g);
+                    neighbor.setF();
+                    neighbor.setParent(&curr_point.first);
                 }
             }
             else {
-                neighbor->setG(neighbor_g);
-                neighbor->setH(HeuristicFunction(neighbor, neighbor_supply));
-                neighbor->setParent(curr_point.first);
+                neighbor.setG(neighbor_g);
+                neighbor.setF();
+                int neighbor_h = HeuristicFunction(neighbor, neighbor_supply);
+                if (neighbor_h == -1) {
+                    continue;  // 不将neighbor加入open_list
+                }
+                neighbor.setH(neighbor_h);
+                neighbor.setF();
+                neighbor.setParent(&curr_point.first);
                 open_list.emplace_back(neighbor, neighbor_supply);
                 std::push_heap(open_list.begin(), open_list.end(), CompareF());
             }
@@ -62,7 +67,7 @@ void Astar::AstarSearch() {
 /**
  * @brief 启发式函数
  */
-int Astar::HeuristicFunction(Point *point, int curr_supply) {
+int Astar::HeuristicFunction(Point& point, int curr_supply) {
     /**
      * 考虑到只能上下左右移动，在当前拥有的补给为 r 时，可到的范围是以当前点为中心的一个正方形（旋转 45 度），其对角线长度为 2r + 1
      * 设这个范围为 SupplyRegion，启发式函数设计如下：
@@ -72,7 +77,7 @@ int Astar::HeuristicFunction(Point *point, int curr_supply) {
      * 3. 若在 2 中找不到任何一个补给点，则返回 -1 告知算法需要重新规划路径
      */
     if (isInSupplyRegion(end, point, curr_supply)) {
-        return point->distance(end);
+        return point.distance(end);
     } else {
         std::priority_queue<int, std::vector<int>, std::greater<>> distances;  // 从小到大排序
         for (auto &supply_point: map.getSupplyPoints()) {
@@ -90,11 +95,11 @@ int Astar::HeuristicFunction(Point *point, int curr_supply) {
 /**
  * @brief 判断点是否在当前补给可达最大范围内
  */
-inline bool Astar::isInSupplyRegion(Point *point, Point *center_point, int r) {
-    int x = point->getX();
-    int y = point->getY();
-    int center_x = center_point->getX();
-    int center_y = center_point->getY();
+inline bool Astar::isInSupplyRegion(Point &point, Point &center_point, int r) {
+    int x = point.getX();
+    int y = point.getY();
+    int center_x = center_point.getX();
+    int center_y = center_point.getY();
     return abs(x - center_x) + abs(y - center_y) <= r;
 }
 

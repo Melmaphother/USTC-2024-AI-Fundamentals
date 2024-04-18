@@ -3,17 +3,18 @@
 #define ASTAR_POINT_H
 
 #include <cmath>
+#include <utility>
 
 class Point {
 private:
-    int x;
-    int y;
-    Point *parent;
-    int g;
-    int h;
-    int f;
+    int x{};
+    int y{};
+    Point *parent{};
+    int g{};
+    int h{};
+    int f{};
 
-    int type;
+    int type{};
     /*
      * 0 ：可通行
        1 ：不可通行
@@ -23,12 +24,9 @@ private:
      */
 
 public:
-    Point() {
-        x = y = g = h = f = type = 0;
-        parent = nullptr;
-    }
+    Point() = default;
 
-    inline bool operator<(const Point &p) const { return f > p.f; }
+    explicit Point(std::pair<int, int> point) : x(point.first), y(point.second) {}
 
     inline void setX(int _x) { this->x = _x; }
 
@@ -50,20 +48,19 @@ public:
 
     inline int getH() const { return h; }
 
-    inline int getF() {
-        f = g + h;
-        return f;
-    }
+    inline void setF() { this->f = g + h; }
+
+    inline int getF() const { return f; }
 
     inline void setType(int _type) { this->type = _type; }
 
     inline int getType() const { return type; }
 
-    inline bool operator==(const Point *p) const { return x == p->x && y == p->y; }
+    inline bool operator==(const Point &p) const { return x == p.x && y == p.y; }
 
-    inline bool operator!=(const Point *p) const { return x != p->x || y != p->y; }
+    inline bool operator!=(const Point &p) const { return x != p.x || y != p.y; }
 
-    inline int distance(const Point *p) const { return abs(x - p->x) + abs(y - p->y); }
+    inline int distance(const Point &p) const { return abs(x - p.x) + abs(y - p.y); }
 };
 
 #endif // ASTAR_POINT_H
