@@ -1,6 +1,6 @@
 
-#ifndef POINT_H
-#define POINT_H
+#ifndef ASTAR_POINT_H
+#define ASTAR_POINT_H
 #include <cmath>
 
 class Point {
@@ -31,49 +31,66 @@ public:
         f = 0;
     }
 
-    bool operator<(const Point& p) const {
+    inline bool operator<(const Point& p) const {
         return f > p.f;
     }
 
-    void setX(int _x) {
+    inline void setX(int _x) {
         this->x = _x;
     }
 
-    void setY(int _y) {
+    inline int getX() {
+        return x;
+    }
+
+    inline void setY(int _y) {
         this->y = _y;
     }
 
-    void setParent(Point* _parent) {
+    inline int getY() {
+        return y;
+    }
+
+    inline void setParent(Point* _parent) {
         this->parent = _parent;
     }
 
-    void setG(int _g) {
+    inline Point* getParent() {
+        return parent;
+    }
+
+    inline void setG(int _g) {
         this->g = _g;
     }
 
-    void setH(int _h) {
+    inline void setH(int _h) {
         this->h = _h;
     }
 
-    void getF() {
+    inline int getF() {
         f = g + h;
+        return f;
     }
 
-    void setType(int _type) {
+    inline void setType(int _type) {
         this->type = _type;
     }
 
-    bool operator==(const Point& p) const {
-        return x == p.x && y == p.y;
+    inline int getType() const {
+        return type;
     }
 
-    bool operator!=(const Point& p) const {
-        return x != p.x || y != p.y;
+    inline bool operator==(const Point* p) const {
+        return x == p->x && y == p->y;
     }
 
-    int distance(const Point& p) {
-        return abs(x - p.x) + abs(y - p.y);
+    inline bool operator!=(const Point* p) const {
+        return x != p->x || y != p->y;
+    }
+
+    inline int distance(const Point* p) const {
+        return abs(x - p->x) + abs(y - p->y);
     }
 };
 
-#endif
+#endif // ASTAR_POINT_H
