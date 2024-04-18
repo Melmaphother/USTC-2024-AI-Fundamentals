@@ -10,28 +10,33 @@ private:
     int length;
     int width;
     int supply;
-    Point** map;
-    Point* start;
-    Point* end;
+    Point **map;
+    Point *start;
+    Point *end;
     std::vector<Point *> supply_points;  // 所有补给点
 
 public:
-    Map(const std::string &input_file);
+    Map() = default;
 
-    Map();
+    explicit Map(const std::string &input_file);
 
     ~Map();
 
 public:
     // 获取周围所有非障碍点
-    std::vector<Point*> getNeighbors(Point* point);
+    std::vector<Point *> getNeighbors(Point *point);
+
+    Point *getStart() const { return start; }
+
+    Point *getEnd() const { return end; }
+
+    int getSupply() const { return supply; }
+
+    std::vector<Point *> getSupplyPoints() const { return supply_points; }
 
 private:
     // 判断点是否在地图内
-    bool isInMap(Point* point) const;
-
-    // 预处理所有补给点到终点的曼哈顿距离，并从小到大排序
-    void PreProcessSupplyPoints();
+    bool isInMap(Point *point) const;
 
 };
 

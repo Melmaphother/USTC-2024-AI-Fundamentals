@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <algorithm>
+
 
 /**
- * @brief 构造函数，从文件中读取地图信息，并对所有补给点进行预处理
+ * @brief 构造函数，从文件中读取地图信息
  * @param input_file 地图文件路径
  */
 Map::Map(const std::string &input_file) {
@@ -52,9 +52,6 @@ Map::Map(const std::string &input_file) {
         }
     }
     file.close();
-
-    // 预处理部分
-    PreProcessSupplyPoints();
 }
 
 Map::~Map() {
@@ -98,11 +95,3 @@ inline bool Map::isInMap(Point *point) const {
     return x >= 0 && x < length && y >= 0 && y < width;
 }
 
-/**
- * @brief 预处理所有补给点到终点的曼哈顿距离，并依照距离对所有补给点从小到大排序
- */
-void Map::PreProcessSupplyPoints() {
-    std::sort(supply_points.begin(), supply_points.end(), [this](Point *a, Point *b) {
-        return a->distance(end) < b->distance(end);
-    });
-}
