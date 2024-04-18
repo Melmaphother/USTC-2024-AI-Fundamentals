@@ -22,6 +22,7 @@ void Astar::AstarSearch() {
         SearchPoint curr_point = *curr_point_pos;
         open_list.erase(curr_point_pos);
         if (curr_point.first == end) {
+            std::cout << "Find the way!" << std::endl;
             GetResult();
         }
 
@@ -56,7 +57,6 @@ void Astar::AstarSearch() {
             }
         }
     }
-
 }
 
 /**
@@ -111,13 +111,13 @@ void Astar::GetResult() {
         step_nums = -1;
         return;
     }
-    Point cur = close_list.back().first;
-    while (cur.getParent() != nullptr) {
-        Point *parent = cur.getParent();
-        if (parent->getX() == cur.getX() - 1) { way = "U" + way; }
-        else if (parent->getX() == cur.getX() + 1) { way = "D" + way; }
-        else if (parent->getY() == cur.getY() - 1) { way = "L" + way; }
-        else if (parent->getY() == cur.getY() + 1) { way = "R" + way; }
+    Point *cur = &close_list.back().first;
+    while (cur->getParent() != nullptr) {
+        Point *parent = cur->getParent();
+        if (parent->getX() == cur->getX() - 1) { way = "U" + way; }
+        else if (parent->getX() == cur->getX() + 1) { way = "D" + way; }
+        else if (parent->getY() == cur->getY() - 1) { way = "L" + way; }
+        else if (parent->getY() == cur->getY() + 1) { way = "R" + way; }
         cur = parent;
         step_nums++;
     }
@@ -134,6 +134,7 @@ void Astar::OutputToFile() {
         return;
     }
     if (step_nums == -1) {
+        std::cout << "No way to go!" << std::endl;
         file << step_nums << std::endl;
     } else {
         file << step_nums << std::endl;
