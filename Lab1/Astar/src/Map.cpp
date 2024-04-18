@@ -49,7 +49,7 @@ Map::Map(const std::string &input_file) {
             } else if (type == 4) {
                 end = std::make_pair(i, j);
             } else if (type == 2) {
-                supply_points.push_back(std::make_pair(i, j));
+                supply_points.emplace_back(i, j);
             }
         }
     }

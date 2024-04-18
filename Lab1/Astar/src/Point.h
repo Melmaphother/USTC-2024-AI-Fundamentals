@@ -36,19 +36,25 @@ public:
 
     inline int getY() const { return y; }
 
+    inline std::pair<int, int> getPos() const { return std::make_pair(x, y); }
+
     inline void setParent(Point *_parent) { this->parent = _parent; }
 
     inline Point *getParent() { return parent; }
 
-    inline void setG(int _g) { this->g = _g; }
+    inline void setG(int _g) {
+        this->g = _g;
+        this->f = g + h;
+    }
 
     inline int getG() const { return g; }
 
-    inline void setH(int _h) { this->h = _h; }
+    inline void setH(int _h) {
+        this->h = _h;
+        this->f = g + h;
+    }
 
     inline int getH() const { return h; }
-
-    inline void setF() { this->f = g + h; }
 
     inline int getF() const { return f; }
 

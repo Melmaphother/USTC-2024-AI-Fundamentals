@@ -5,13 +5,13 @@
 #include "Map.h"
 #include <string>
 #include <vector>
-#include <queue>
+#include <set>
 
 typedef std::pair<Point, int> SearchPoint; // 点以及该点上拥有的补给
 
-struct CompareF {
+struct ComparePoint {
     bool operator()(const SearchPoint &p1, const SearchPoint &p2) {
-        return p1.first.getF() > p2.first.getF();  // 小根堆
+        return p1.first.getF() < p2.first.getF();
     }
 };
 
@@ -23,7 +23,7 @@ private:
 
     int step_nums;
     std::string way;
-    std::vector<SearchPoint> open_list;
+    std::multiset<SearchPoint, ComparePoint> open_list;
     std::vector<SearchPoint> close_list;
 
     std::string output_file;
@@ -37,7 +37,7 @@ public:
 
 private:
     int HeuristicFunction(Point &point, int curr_supply);  // 启发式函数
-    static bool isInSupplyRegion(Point &point, Point &center_point, int r);  // 判断点是否在当前补给可达最大范围内
+    static bool isInSupplyRegion(std::pair<int, int> point_pos, std::pair<int, int> center_point_pos, int r);  // 判断点是否在当前补给可达最大范围内
     void GetResult();  // 反向遍历 close_list，获取路径
     void OutputToFile();  // 将结果输出到文件
 };
