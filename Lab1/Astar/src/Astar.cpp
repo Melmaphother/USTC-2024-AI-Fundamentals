@@ -34,31 +34,30 @@ void Astar::AstarSearch() {
 
         auto neighbors = map.getNeighbors(curr_point.first);
         for (auto &neighbor: neighbors) {
-            // 如果邻居点在 close_list 中，跳过
-            if (std::find_if(close_list.begin(), close_list.end(), [neighbor](const SearchPoint &p) {
+            bool is_in_close_list = std::find_if(close_list.begin(), close_list.end(), [neighbor](const SearchPoint &p) {
                 return p.first == neighbor;
-            }) != close_list.end()) {
-                continue;
-            }
+            }) != close_list.end();
+            bool is_in_open_list = std::find_if(open_list.begin(), open_list.end(), [neighbor](const SearchPoint &p) {
+                return p.first == neighbor;
+            }) != open_list.end();
             int neighbor_g = curr_point.first.getG() + 1;
             int neighbor_supply = neighbor.getType() == 2 ? map.getSupply() : curr_point.second - 1;
-            // 如果邻居点在open_list中，说明已经计算过G值，这里需要判断新的G值是否更小
-            if (std::find_if(open_list.begin(), open_list.end(), [neighbor](const SearchPoint &p) {
-                return p.first == neighbor;
-            }) != open_list.end()) {
-                if (neighbor_g < neighbor.getG()) {
-                    neighbor.setG(neighbor_g);
-                    neighbor.setParentPos(curr_point.first.getPos());
-                }
-            } else {
+            int neighbor_h = HeuristicFunction(neighbor, neighbor_supply);
+            if (neighbor_h == -1) {
+                continue;  // 不将neighbor加入open_list
+            }
+
+            if (!is_in_close_list && !is_in_open_list) {
                 neighbor.setG(neighbor_g);
-                int neighbor_h = HeuristicFunction(neighbor, neighbor_supply);
-                if (neighbor_h == -1) {
-                    continue;  // 不将neighbor加入open_list
-                }
                 neighbor.setH(neighbor_h);
                 neighbor.setParentPos(curr_point.first.getPos());
                 open_list.emplace(neighbor, neighbor_supply);
+            } else if (is_in_open_list) {
+                if (neighbor_g < neighbor.getG()) {
+                    neighbor.setG(neighbor_g);
+                    neighbor.setH(neighbor_h);
+                    neighbor.setParentPos(curr_point.first.getPos());
+                }
             }
         }
     }
