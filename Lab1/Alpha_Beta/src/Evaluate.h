@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include "Chess.h"
+#include "ChessBoard.h"
 
 class Evaluate {
 private:
@@ -37,9 +38,14 @@ private:
 public:
     Evaluate();
 
+    // 行棋过程中
     std::vector<std::vector<int>> getChessPowerEvalMatrix(ChessType type);
     int getChessValue(ChessType type);
     int getMoveValue(ChessType type);
+
+    // 初始化棋盘时的初始评估
+    int getAllChessPowerEval(ChessBoardMatrix &chessboard_matrix, ChessColor color);
+    int getAllChessValue(ChessBoardMatrix &chessboard_matrix, ChessColor color);
 };
 
 

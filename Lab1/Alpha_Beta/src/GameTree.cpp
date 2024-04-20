@@ -3,11 +3,11 @@
 
 
 GameTreeNode
-GameTreeNode::CreateChildNode(std::vector<std::vector<ChessType>> &chessboard, Move move) {
+GameTreeNode::CreateChildNode(ChessBoardMatrix &chessboard_matrix, Move move) {
     // 子结点交换走棋方
     ChessColor child_color = curr_color == Red ? Black : Red;
     // 根据父结点和 move 创建子结点的棋盘
-    std::vector<std::vector<ChessType>> child_chessboard = chessboard;
+    ChessBoardMatrix child_chessboard_matrix = chessboard_matrix;
     // 子结点是否结束游戏
     bool child_is_stop_game = false;
     // 子结点当前分数
@@ -27,13 +27,13 @@ GameTreeNode::CreateChildNode(std::vector<std::vector<ChessType>> &chessboard, M
         // 如果吃子，这里特殊考虑吃将/帅的情况，这种情况下游戏结束
         // 如果当前走棋方是红子，则吃的是黑子
         if (curr_color == ChessColor::Red) {
-            if (child_chessboard[move.next_x][move.next_y] == ChessType::BlackKing) {
+            if (child_chessboard_matrix[move.next_x][move.next_y] == ChessType::BlackKing) {
                 child_is_stop_game = true;
             }
         }
             // 如果当前走棋方是黑子，则吃的是红子
         else {
-            if (child_chessboard[move.next_x][move.next_y] == ChessType::RedKing) {
+            if (child_chessboard_matrix[move.next_x][move.next_y] == ChessType::RedKing) {
                 child_is_stop_game = true;
             }
         }
@@ -48,28 +48,63 @@ GameTreeNode::CreateChildNode(std::vector<std::vector<ChessType>> &chessboard, M
     // 如果 move 没有吃子，那么子结点当前行棋方分数 = 父结点对手方分数
     // 如果被吃子，那么子结点当前行棋方分数 = 父结点对手方分数 - 被吃子的价值 - 被吃子原位的棋力评估
     if (move.is_eat) {
-        auto child_eval_matrix = eval.getChessPowerEvalMatrix(child_chessboard[move.next_x][move.next_y]);
-        child_curr_score = opponent_score - eval.getChessValue(child_chessboard[move.next_x][move.next_y])
+        auto next_chess_type = child_chessboard_matrix[move.next_x][move.next_y];
+        auto child_eval_matrix = eval.getChessPowerEvalMatrix(next_chess_type);
+        child_curr_score = opponent_score - eval.getChessValue(next_chess_type)
                            - child_eval_matrix[move.next_x][move.next_y];
     } else {
         child_curr_score = opponent_score;
     }
 
     // 判断是否游戏结束以及计算完分数之后，可以移动棋子
-    child_chessboard[move.next_x][move.next_y] = child_chessboard[move.init_x][move.init_y];
-    child_chessboard[move.init_x][move.init_y] = ChessType::Empty;
+    child_chessboard_matrix[move.next_x][move.next_y] = child_chessboard_matrix[move.init_x][move.init_y];
+    child_chessboard_matrix[move.init_x][move.init_y] = ChessType::Empty;
 
-    GameTreeNode child(child_color, child_chessboard, child_curr_score, child_opponent_score, child_is_stop_game,
+    GameTreeNode child(child_color, child_chessboard_matrix, child_curr_score, child_opponent_score, child_is_stop_game,
                        child_max_depth, child_curr_depth);
     return child;
 }
 
+/**
+ * // node 的分数 = 程序方分数 - 对手方分数
+ * @return node 的分数
+ */
 int GameTreeNode::getNodeScore() {
-    // node 的分数 = 程序方分数 - 对手方分数
     // 红方为程序方，黑方为对手方
     if (curr_color == ChessColor::Red) {
         return curr_score - opponent_score;
     } else {
         return opponent_score - curr_score;
     }
+}
+
+/**
+ * 根结点当前走棋方分数的初始化
+ * @param _curr_color 当前走棋方
+ * @param init_chessboard 初始棋盘
+ * @return 当前走棋方初始分数
+ */
+int GameTreeNode::getInitNodeCurrScore(ChessColor _curr_color, ChessBoardMatrix &init_chessboard_matrix) {
+    // 根结点的行棋方为红方，对手方为黑方
+    // 此时其分数均为所有棋子的价值 + 所有棋子棋力评估
+    Evaluate eval;
+    int init_curr_score = eval.getAllChessPowerEval(init_chessboard_matrix, _curr_color) +
+                          eval.getAllChessValue(init_chessboard_matrix, _curr_color);
+    return init_curr_score;
+}
+
+
+/**
+ * 根结点对手方分数的初始化
+ * @param _curr_color 根结点对手方
+ * @param init_chessboard 初始棋盘
+ * @return 对手方初始分数
+ */
+int GameTreeNode::getInitNodeOpponentScore(ChessColor _curr_color,
+                                           ChessBoardMatrix &init_chessboard_matrix) {
+    Evaluate eval;
+    ChessColor opponent_color = _curr_color == Red ? Black : Red;
+    int init_opponent_score = eval.getAllChessPowerEval(init_chessboard_matrix, opponent_color) +
+                              eval.getAllChessValue(init_chessboard_matrix, opponent_color);
+    return init_opponent_score;
 }

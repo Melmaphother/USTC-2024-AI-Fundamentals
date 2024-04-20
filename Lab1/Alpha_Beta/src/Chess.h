@@ -2,6 +2,7 @@
 #define ALPHA_BETA_CHESS_H
 
 #include <map>
+#include <iostream>
 
 enum ChessColor {
     Red = true,
@@ -46,6 +47,9 @@ std::map<char, ChessType> getChessTypeFromChar = {
 };
 
 inline ChessColor getChessColor(ChessType type) {
+    if (type == Empty) {
+        std::cerr << "Empty chess type has no color!" << std::endl;
+    }
     return type >= 'A' && type <= 'Z' ? Red : Black;
 }
 

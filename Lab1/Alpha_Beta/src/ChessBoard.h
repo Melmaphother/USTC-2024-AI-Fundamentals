@@ -8,6 +8,8 @@
 #include "Chess.h"
 #include "Evaluate.h"
 
+typedef std::vector<std::vector<ChessType>> ChessBoardMatrix;
+
 // 动作结构体
 struct Move {
     int init_x;
@@ -24,7 +26,7 @@ class ChessBoard {
 private:
     int width{9};
     int height{10};
-    std::vector<std::vector<ChessType>> chessboard; // 棋盘
+    ChessBoardMatrix chessboard_matrix; // 棋盘
     ChessColor curr_color{Red}; // 当前下棋方
 
     std::vector<Move> moves; // 当前棋盘下可以走的动作
@@ -42,19 +44,19 @@ private:
 
 public:
     explicit ChessBoard(const std::string &input_file) {
-        auto chessboard_from_file = getChessBoardFromFile(input_file);
-        initChessBoard(chessboard_from_file, Red);
+        auto chessboard_matrix_from_file = getChessBoardMatrixFromFile(input_file);
+        initChessBoard(chessboard_matrix_from_file, Red);
     }
-    ChessBoard(std::vector<std::vector<ChessType>>& chessboard, ChessColor curr_color) {
-        initChessBoard(chessboard, curr_color);
+    ChessBoard(ChessBoardMatrix& _chessboard_matrix, ChessColor _curr_color) {
+        initChessBoard(_chessboard_matrix, _curr_color);
     }
 
 private:
-    static std::vector<std::vector<ChessType>> getChessBoardFromFile(const std::string &input_file);
-    void initChessBoard(std::vector<std::vector<ChessType>>& chessboard, ChessColor curr_color);
+    static ChessBoardMatrix getChessBoardMatrixFromFile(const std::string &input_file);
+    void initChessBoard(ChessBoardMatrix& _chessboard_matrix, ChessColor _curr_color);
 
 public:
-    std::vector<std::vector<ChessType>> getChessBoard() const { return chessboard; }
+    ChessBoardMatrix getChessBoardMatrix() const { return chessboard_matrix; }
     std::vector<Move> getMoves() const { return moves; }
 };
 

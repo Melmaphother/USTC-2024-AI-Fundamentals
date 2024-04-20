@@ -207,3 +207,47 @@ int Evaluate::getMoveValue(ChessType type) {
     }
     return MoveValue[type];
 }
+
+
+/**
+ * 初始化棋盘时的初始评估
+ * @param color 当前下棋方
+ * @return 当前下棋方的所有棋子的棋力评估之和
+ */
+
+int Evaluate::getAllChessPowerEval(ChessBoardMatrix &chessboard_matrix, ChessColor color) {
+    int sum = 0;
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 10; j++) {
+            auto chess_type = chessboard_matrix[i][j];
+            if (chess_type == Empty) continue;
+            auto chess_color = getChessColor(chess_type);
+            if (chess_color == color) {
+                auto eval_matrix = getChessPowerEvalMatrix(chess_type);
+                sum += eval_matrix[i][j];
+            }
+        }
+    }
+    return sum;
+}
+
+/**
+ * 初始化棋盘时的初始评估
+ * @param color 当前下棋方
+ * @return 当前下棋方的所有棋子的价值之和
+ */
+
+int Evaluate::getAllChessValue(ChessBoardMatrix &chessboard_matrix, ChessColor color) {
+    int sum = 0;
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 10; j++) {
+            auto chess_type = chessboard_matrix[i][j];
+            if (chess_type == Empty) continue;
+            auto chess_color = getChessColor(chess_type);
+            if (chess_color == color) {
+                sum += getChessValue(chess_type);
+            }
+        }
+    }
+    return sum;
+}
