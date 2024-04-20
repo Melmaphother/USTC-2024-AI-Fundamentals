@@ -24,7 +24,6 @@ class ChessBoard {
 private:
     int width{9};
     int height{10};
-    std::vector<Chess> chesses; // 棋子
     std::vector<std::vector<ChessType>> chessboard; // 棋盘
     ChessColor curr_color{Red}; // 当前下棋方
 
@@ -55,7 +54,6 @@ private:
     void initChessBoard(std::vector<std::vector<ChessType>>& chessboard, ChessColor curr_color);
 
 public:
-    std::vector<Chess> getChesses() const { return chesses; }
     std::vector<std::vector<ChessType>> getChessBoard() const { return chessboard; }
     std::vector<Move> getMoves() const { return moves; }
 };

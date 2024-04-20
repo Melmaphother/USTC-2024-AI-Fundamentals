@@ -2,7 +2,7 @@
 #include "Evaluate.h"
 
 Evaluate::Evaluate() {
-    RedRookEvaluate = {
+    red_rook_power_eval_matrix = {
             {-6, 5, -2, 4, 8, 8, 6, 6, 6, 6},
             {6, 8, 8, 9, 12, 11, 13, 8, 12, 8},
             {4, 6, 4, 4, 12, 11, 13, 7, 9, 7},
@@ -13,7 +13,7 @@ Evaluate::Evaluate() {
             {6, 8, 8, 9, 12, 11, 13, 8, 12, 8},
             {-6, 5, -2, 4, 8, 8, 6, 6, 6, 6}
     };
-    RedKnightEvaluate = {
+    red_knight_power_eval_matrix = {
             {0, -3, 5, 4, 2, 2, 5, 4, 2, 2},
             {-3, 2, 4, 6, 10, 12, 20, 10, 8, 2},
             {2, 4, 6, 10, 13, 11, 12, 11, 15, 2},
@@ -24,7 +24,7 @@ Evaluate::Evaluate() {
             {-3, 2, 4, 6, 10, 12, 20, 10, 8, 2},
             {0, -3, 5, 4, 2, 2, 5, 4, 2, 2}
     };
-    RedCannonEvaluate = {
+    red_cannon_power_eval_matrix = {
             {0, 0, 1, 0, -1, 0, 0, 1, 2, 4},
             {0, 1, 0, 0, 0, 0, 3, 1, 2, 4},
             {1, 2, 4, 0, 3, 0, 3, 0, 0, 0},
@@ -35,7 +35,7 @@ Evaluate::Evaluate() {
             {0, 1, 0, 0, 0, 0, 3, 1, 2, 4},
             {0, 0, 1, 0, -1, 0, 0, 1, 2, 4}
     };
-    RedAdvisorEvaluate = {
+    red_advisor_power_eval_matrix = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -46,7 +46,7 @@ Evaluate::Evaluate() {
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
-    RedBishopEvaluate = {
+    red_bishop_power_eval_matrix = {
             {0, 0, -2, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -57,7 +57,7 @@ Evaluate::Evaluate() {
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, -2, 0, 0, 0, 0, 0, 0, 0}
     };
-    RedPawnEvaluate = {
+    red_pawn_power_eval_matrix = {
             {0, 0, 0, -2, 3, 10, 20, 20, 20, 0},
             {0, 0, 0, 0, 0, 18, 27, 30, 30, 0},
             {0, 0, 0, -2, 4, 22, 30, 45, 50, 0},
@@ -68,7 +68,7 @@ Evaluate::Evaluate() {
             {0, 0, 0, 0, 0, 18, 27, 30, 30, 0},
             {0, 0, 0, -2, 3, 10, 20, 20, 20, 0}
     };
-    RedKingEvaluate = {
+    red_king_power_eval_matrix = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -79,13 +79,13 @@ Evaluate::Evaluate() {
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
-    BlackRookEvaluate = getBlackEvaluateFromRed(RedRook);
-    BlackKnightEvaluate = getBlackEvaluateFromRed(RedKnight);
-    BlackCannonEvaluate = getBlackEvaluateFromRed(RedCannon);
-    BlackAdvisorEvaluate = getBlackEvaluateFromRed(RedAdvisor);
-    BlackBishopEvaluate = getBlackEvaluateFromRed(RedBishop);
-    BlackPawnEvaluate = getBlackEvaluateFromRed(RedPawn);
-    BlackKingEvaluate = getBlackEvaluateFromRed(RedKing);
+    black_rook_power_eval_matrix = getBlackEvalFromRed(RedRook);
+    black_knight_power_eval_matrix = getBlackEvalFromRed(RedKnight);
+    black_cannon_power_eval_matrix = getBlackEvalFromRed(RedCannon);
+    black_advisor_power_eval_matrix = getBlackEvalFromRed(RedAdvisor);
+    black_bishop_power_eval_matrix = getBlackEvalFromRed(RedBishop);
+    black_pawn_power_eval_matrix = getBlackEvalFromRed(RedPawn);
+    black_king_power_eval_matrix = getBlackEvalFromRed(RedKing);
 
     ChessValue = {
             {RedRook, 500},
@@ -126,9 +126,9 @@ Evaluate::Evaluate() {
 }
 
 
-std::vector<std::vector<int>> Evaluate::getBlackEvaluateFromRed(ChessType type) {
+std::vector<std::vector<int>> Evaluate::getBlackEvalFromRed(ChessType type) {
     std::vector<std::vector<int>> BlackEvaluate;
-    auto RedEvaluate = getChessEvaluate(type);
+    auto RedEvaluate = getChessPowerEvalMatrix(type);
     for (int i = 0; i < RedEvaluate.size(); i++) {
         std::vector<int> row;
         row.reserve(RedEvaluate[0].size());
@@ -145,36 +145,36 @@ std::vector<std::vector<int>> Evaluate::getBlackEvaluateFromRed(ChessType type) 
  * @param type 棋子类型
  * @return 对应所有位置评估矩阵
  */
-std::vector<std::vector<int>> Evaluate::getChessEvaluate(ChessType type){
+std::vector<std::vector<int>> Evaluate::getChessPowerEvalMatrix(ChessType type){
     switch (type) {
         case RedRook:
-            return RedRookEvaluate;
+            return red_rook_power_eval_matrix;
         case RedKnight:
-            return RedKnightEvaluate;
+            return red_knight_power_eval_matrix;
         case RedCannon:
-            return RedCannonEvaluate;
+            return red_cannon_power_eval_matrix;
         case RedAdvisor:
-            return RedAdvisorEvaluate;
+            return red_advisor_power_eval_matrix;
         case RedBishop:
-            return RedBishopEvaluate;
+            return red_bishop_power_eval_matrix;
         case RedPawn:
-            return RedPawnEvaluate;
+            return red_pawn_power_eval_matrix;
         case RedKing:
-            return RedKingEvaluate;
+            return red_king_power_eval_matrix;
         case BlackRook:
-            return BlackRookEvaluate;
+            return black_rook_power_eval_matrix;
         case BlackKnight:
-            return BlackKnightEvaluate;
+            return black_knight_power_eval_matrix;
         case BlackCannon:
-            return BlackCannonEvaluate;
+            return black_cannon_power_eval_matrix;
         case BlackAdvisor:
-            return BlackAdvisorEvaluate;
+            return black_advisor_power_eval_matrix;
         case BlackBishop:
-            return BlackBishopEvaluate;
+            return black_bishop_power_eval_matrix;
         case BlackPawn:
-            return BlackPawnEvaluate;
+            return black_pawn_power_eval_matrix;
         case BlackKing:
-            return BlackKingEvaluate;
+            return black_king_power_eval_matrix;
         case Empty:
             std::cout << "Empty chess type has no evaluate" << std::endl;
             return std::vector<std::vector<int>>(10, std::vector<int>(9, 0));
@@ -182,24 +182,19 @@ std::vector<std::vector<int>> Evaluate::getChessEvaluate(ChessType type){
 }
 
 /**
- * 获取棋盘上当前下棋方所有棋子的价值
- * @param chessboard 棋盘
- * @param color 当前下棋方
- * @return 棋盘上所有棋子的价值
+ * 获取棋子价值
+ * @param type 棋子类型
+ * @return 棋子价值
  */
 
-int Evaluate::getAllChessValueOfColor(std::vector<std::vector<ChessType>> &chessboard, ChessColor color) {
-    int value = 0;
-    for (int i = 0; i < chessboard.size(); i++) {
-        for (int j = 0; j < chessboard[0].size(); j++) {
-            ChessColor chess_color = isupper(chessboard[i][j]) ? Red : Black;
-            if (chess_color == color) {
-                value += ChessValue[chessboard[i][j]];
-            }
-        }
+int Evaluate::getChessValue(ChessType type) {
+    if (ChessValue.find(type) == ChessValue.end()) {
+        std::cout << "Chess type not found" << std::endl;
+        return 0;
     }
-    return value;
+    return ChessValue[type];
 }
+
 /**
  * 获取行棋价值
  * @param type 吃掉对方的棋子类型

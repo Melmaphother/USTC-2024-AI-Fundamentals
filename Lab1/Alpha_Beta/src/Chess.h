@@ -1,4 +1,3 @@
-
 #ifndef ALPHA_BETA_CHESS_H
 #define ALPHA_BETA_CHESS_H
 
@@ -46,13 +45,8 @@ std::map<char, ChessType> getChessTypeFromChar = {
         {'.', Empty}
 };
 
-// 棋子结构体
-struct Chess {
-    ChessType type;
-    ChessColor color;
-    int x;
-    int y;
-    Chess(ChessType type, ChessColor color, int x, int y) : type(type), color(color), x(x), y(y) {}
-};
+inline ChessColor getChessColor(ChessType type) {
+    return type >= 'A' && type <= 'Z' ? Red : Black;
+}
 
 #endif //ALPHA_BETA_CHESS_H
