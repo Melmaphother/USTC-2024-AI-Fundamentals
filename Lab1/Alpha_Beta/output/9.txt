@@ -1,0 +1,1 @@
+Red Rook at (3, 5) moves to (3, 6)

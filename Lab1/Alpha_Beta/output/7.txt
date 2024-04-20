@@ -1,0 +1,1 @@
+Red Pawn at (5, 7) moves to (6, 7)
