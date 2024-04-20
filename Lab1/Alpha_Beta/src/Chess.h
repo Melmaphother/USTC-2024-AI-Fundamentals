@@ -46,6 +46,24 @@ std::map<char, ChessType> getChessTypeFromChar = {
         {'.', Empty}
 };
 
+std::map<ChessType, std::string> getChessStringFromType = {
+        {RedRook, "RedRook"},
+        {RedKnight, "RedKnight"},
+        {RedCannon, "RedCannon"},
+        {RedBishop, "RedBishop"},
+        {RedAdvisor, "RedAdvisor"},
+        {RedKing, "RedKing"},
+        {RedPawn, "RedPawn"},
+        {BlackRook, "BlackRook"},
+        {BlackKnight, "BlackKnight"},
+        {BlackCannon, "BlackCannon"},
+        {BlackBishop, "BlackBishop"},
+        {BlackAdvisor, "BlackAdvisor"},
+        {BlackKing, "BlackKing"},
+        {BlackPawn, "BlackPawn"},
+        {Empty, "Empty"}
+};
+
 inline ChessColor getChessColor(ChessType type) {
     if (type == Empty) {
         std::cerr << "Empty chess type has no color!" << std::endl;

@@ -4,6 +4,8 @@
 
 GameTreeNode
 GameTreeNode::CreateChildNode(ChessBoardMatrix &chessboard_matrix, Move move) {
+    // 记录父结点到子结点的动作
+    Move parent_to_child_move = move;
     // 子结点交换走棋方
     ChessColor child_color = curr_color == Red ? Black : Red;
     // 根据父结点和 move 创建子结点的棋盘
@@ -60,13 +62,19 @@ GameTreeNode::CreateChildNode(ChessBoardMatrix &chessboard_matrix, Move move) {
     child_chessboard_matrix[move.next_x][move.next_y] = child_chessboard_matrix[move.init_x][move.init_y];
     child_chessboard_matrix[move.init_x][move.init_y] = ChessType::Empty;
 
-    GameTreeNode child(child_color, child_chessboard_matrix, child_curr_score, child_opponent_score, child_is_stop_game,
-                       child_max_depth, child_curr_depth);
+    GameTreeNode child(
+            parent_to_child_move,
+              child_color, child_chessboard_matrix,
+              child_curr_score, child_opponent_score,
+              child_is_stop_game,
+              child_max_depth, child_curr_depth
+              );
     return child;
 }
 
 /**
- * // node 的分数 = 程序方分数 - 对手方分数
+ * node 的分数 = 程序方分数 - 对手方分数
+ * 分数大于 0 表示程序方有优势，分数小于 0 表示对手方有优势
  * @return node 的分数
  */
 int GameTreeNode::getNodeScore() {

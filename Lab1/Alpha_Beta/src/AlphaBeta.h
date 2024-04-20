@@ -3,16 +3,23 @@
 #define ALPHA_BETA_ALPHA_BETA_H
 
 #include "GameTree.h"
+#include <limits>
 
 class AlphaBeta {
 private:
     GameTreeNode root;
-    int max_depth{10};
-    
+    std::vector<Move> best_moves;
+
 public:
-    AlphaBeta(ChessBoardMatrix _init_chessboard_matrix, int _max_depth) : 
-        root(GameTreeNode(Red, _init_chessboard_matrix, _max_depth)),
-        max_depth(_max_depth) {}
+    AlphaBeta(ChessBoardMatrix &init_chessboard_matrix, int _max_depth) :
+            root(Red, init_chessboard_matrix, _max_depth) {}
+
+    int AlphaBetaSearch();
+    std::vector<Move> getBestMoves();
+
+private:
+    int AlphaBetaSearch(GameTreeNode &node, int alpha, int beta);
+    void getBestMoves(GameTreeNode &node);
 };
 
 #endif //ALPHA_BETA_ALPHA_BETA_H
