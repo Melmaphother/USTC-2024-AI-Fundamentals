@@ -27,42 +27,10 @@ enum ChessType {
     Empty = '.'
 };
 
+// c++17 之后这里可以加 inline 保证不会重复定义
+extern std::map<char, ChessType> getChessTypeFromChar;
 
-std::map<char, ChessType> getChessTypeFromChar = {
-        {'R', RedRook},
-        {'N', RedKnight},
-        {'C', RedCannon},
-        {'B', RedBishop},
-        {'A', RedAdvisor},
-        {'K', RedKing},
-        {'P', RedPawn},
-        {'r', BlackRook},
-        {'n', BlackKnight},
-        {'c', BlackCannon},
-        {'b', BlackBishop},
-        {'a', BlackAdvisor},
-        {'k', BlackKing},
-        {'p', BlackPawn},
-        {'.', Empty}
-};
-
-std::map<ChessType, std::string> getChessStringFromType = {
-        {RedRook, "RedRook"},
-        {RedKnight, "RedKnight"},
-        {RedCannon, "RedCannon"},
-        {RedBishop, "RedBishop"},
-        {RedAdvisor, "RedAdvisor"},
-        {RedKing, "RedKing"},
-        {RedPawn, "RedPawn"},
-        {BlackRook, "BlackRook"},
-        {BlackKnight, "BlackKnight"},
-        {BlackCannon, "BlackCannon"},
-        {BlackBishop, "BlackBishop"},
-        {BlackAdvisor, "BlackAdvisor"},
-        {BlackKing, "BlackKing"},
-        {BlackPawn, "BlackPawn"},
-        {Empty, "Empty"}
-};
+extern std::map<ChessType, std::string> getChessStringFromType;
 
 inline ChessColor getChessColor(ChessType type) {
     if (type == Empty) {

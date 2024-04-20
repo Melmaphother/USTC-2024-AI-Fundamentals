@@ -6,7 +6,6 @@
 #include <string>
 #include <map>
 #include "Chess.h"
-#include "Evaluate.h"
 
 typedef std::vector<std::vector<ChessType>> ChessBoardMatrix;
 
@@ -28,49 +27,33 @@ struct Move {
 // 棋盘类
 class ChessBoard {
 private:
-    int width{9};
-    int height{10};
     ChessBoardMatrix chessboard_matrix; // 棋盘
     ChessColor curr_color{Red}; // 当前下棋方
-
+    bool is_stop_game{false}; // 是否结束游戏
     std::vector<Move> moves; // 当前棋盘下可以走的动作
-
-    Evaluate eval; // 评估
 
 private:
     void getRookMoves(int x, int y);
-
     void getKnightMoves(int x, int y);
-
     void getCannonMoves(int x, int y);
-
     void getAdvisorMoves(int x, int y);
-
     void getBishopMoves(int x, int y);
-
     void getPawnMoves(int x, int y);
-
     void getKingMoves(int x, int y);
 
 public:
-    explicit ChessBoard(const std::string &input_file) {
-        auto chessboard_matrix_from_file = getChessBoardMatrixFromFile(input_file);
-        initChessBoard(chessboard_matrix_from_file, Red);
-    }
+    explicit ChessBoard(const std::string &input_file) ;
 
-    ChessBoard(ChessBoardMatrix &_chessboard_matrix, ChessColor _curr_color) {
-        initChessBoard(_chessboard_matrix, _curr_color);
-    }
+    int getCurrChessBoardScore();
+    ChessBoard getChildChessBoardFromMove(const Move &move);
+
+    ChessBoardMatrix getChessBoardMatrix() const { return chessboard_matrix; }
+    ChessColor getCurrColor() const { return curr_color; }
+    bool isStopGame() const { return is_stop_game; }
+    std::vector<Move> getAllPossibleMoves() const { return moves; }
 
 private:
-    static ChessBoardMatrix getChessBoardMatrixFromFile(const std::string &input_file);
-
-    void initChessBoard(ChessBoardMatrix &_chessboard_matrix, ChessColor _curr_color);
-
-public:
-    ChessBoardMatrix getChessBoardMatrix() const { return chessboard_matrix; }
-
-    std::vector<Move> getMoves() const { return moves; }
+    void updateMoves();
 };
 
 #endif //ALPHA_BETA_CHESSBOARD_H
