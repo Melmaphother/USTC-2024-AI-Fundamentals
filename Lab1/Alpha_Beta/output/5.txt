@@ -1,1 +1,1 @@
-Red Cannon at (4, 6) eats Black Advisor at (4, 7)
+Red Knight at (1, 6) moves to (2, 8)
