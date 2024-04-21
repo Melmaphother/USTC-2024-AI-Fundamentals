@@ -1,1 +1,1 @@
-Red Knight at (1, 7) moves to (2, 9)
+Red Pawn at (5, 6) moves to (4, 6)

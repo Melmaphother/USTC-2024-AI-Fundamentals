@@ -1,1 +1,1 @@
-Red Rook at (5, 6) moves to (5, 8)
+Red Knight at (6, 2) moves to (5, 4)

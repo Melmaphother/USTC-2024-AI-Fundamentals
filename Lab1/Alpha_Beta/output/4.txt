@@ -1,1 +1,1 @@
-Red Rook at (3, 8) moves to (3, 7)
+Red Rook at (3, 8) eats Black Rook at (3, 5)

@@ -1,1 +1,1 @@
-Red Cannon at (4, 6) eats Black Pawn at (1, 6)
+Red Cannon at (4, 6) eats Black Advisor at (4, 7)

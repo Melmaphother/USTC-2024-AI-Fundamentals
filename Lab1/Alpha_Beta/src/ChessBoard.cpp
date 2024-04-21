@@ -74,9 +74,10 @@ void ChessBoard::updateMoves() {
 
 int ChessBoard::getCurrChessBoardScore() {
     // 获取当前棋盘的分数，为程序方的分数减去对方的分数
-    // 程序方的分数由三部分组成
+    // 当前方为红方则程序方为当前方，当前方为黑方则程序方为对方
+    // 当前方的分数由三部分组成
     // 棋子位置代表的棋力 + 棋子自身的价值 + 所有 move 的分数之和
-    // 对方的分数由两部分组成
+    // 对手方的分数由两部分组成
     // 棋子位置代表的棋力 + 棋子自身的价值
     int all_move_score = 0;
     for (const auto &move: moves) {
@@ -102,7 +103,10 @@ int ChessBoard::getCurrChessBoardScore() {
             }
         }
     }
-    return curr_chess_power + curr_value + all_move_score - opponent_chess_power - opponent_value;
+    int curr_score = curr_chess_power + curr_value + all_move_score;
+    int opponent_score = opponent_chess_power + opponent_value;
+
+    return curr_color == Red ? curr_score - opponent_score : opponent_score - curr_score;
 }
 
 ChessBoard ChessBoard::getChildChessBoardFromMove(const Move &move) {
