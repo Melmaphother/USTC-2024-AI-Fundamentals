@@ -43,7 +43,8 @@ void Astar::AstarSearch() {
             bool is_in_close_list = close_list_iter != close_list.end();
             bool is_in_open_list = open_list_iter != open_list.end();
 
-            int neighbor_g = neighbor.distance(map.getStart());
+            //int neighbor_g = neighbor.distance(map.getStart());
+            int neighbor_g = curr_point.getG() + 1; // 两个都行其实
             // 非补给点的补给量为当前点的补给量减 1，补给点的补给量为其最大补给量（也就是本身）
             int neighbor_supply = neighbor.getType() == 2 ? neighbor.getSupply() : curr_point.getSupply() - 1;
             int neighbor_h = HeuristicFunction(neighbor, neighbor_supply);
@@ -69,10 +70,6 @@ void Astar::AstarSearch() {
                     open_list.emplace(neighbor_in_open_list);
                 }
             } else {
-                if (heuristic_function == "non-trivial") {
-                    // 特殊设计的非平凡启发式函数，不需要考虑如下的情况
-                    continue;
-                }
                 // 即使在 close_list 中，若新的结点的 supply 更多，也要重新加入 open_list
                 Point neighbor_in_close_list = *close_list_iter;
                 if (neighbor_supply > neighbor_in_close_list.getSupply()) {
