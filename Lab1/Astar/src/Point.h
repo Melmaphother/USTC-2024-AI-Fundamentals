@@ -22,6 +22,7 @@ private:
        3 ：起点
        4 ：终点
      */
+    int supply{};
 
 public:
     Point() = default;
@@ -59,8 +60,10 @@ public:
     inline int getF() const { return f; }
 
     inline void setType(int _type) { this->type = _type; }
-
     inline int getType() const { return type; }
+
+    inline void setSupply(int _supply) { this->supply = _supply; }
+    inline int getSupply() const { return supply; }
 
     inline bool operator==(const Point &p) const { return x == p.x && y == p.y; }
 

@@ -7,15 +7,14 @@
 #include <vector>
 #include <set>
 
-typedef std::pair<Point, int> SearchPoint; // 点以及该点上拥有的补给
 
 struct ComparePoint {
-    bool operator()(const SearchPoint &p1, const SearchPoint &p2) {
-        return p1.first.getF() < p2.first.getF();
+    bool operator()(const Point &p1, const Point &p2) {
+        return p1.getF() < p2.getF();
     }
 };
 
-enum {
+enum AstarStatus {
     AStarInitialization,
     AStarSearching,
     AStarFound,
@@ -26,20 +25,20 @@ enum {
 class Astar {
 private:
     Map map;
-    Point start;
-    Point end;
 
     int step_nums;
     std::string way;
-    std::multiset<SearchPoint, ComparePoint> open_list;
-    std::vector<SearchPoint> close_list;
+    std::multiset<Point, ComparePoint> open_list;
+    std::vector<Point> close_list;
 
     std::string output_file;
+
+    std::string heuristic_function;
 
     int status;
 
 public:
-    Astar(std::string &input_file, std::string &output_file);
+    Astar(std::string &input_file, std::string &output_file, std::string _heuristic_function="trivial");
 
     ~Astar() = default;
 

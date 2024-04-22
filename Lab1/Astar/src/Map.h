@@ -11,9 +11,9 @@ private:
     int height{};
     int width{};
     int supply{};
-    std::vector<std::vector<Point>> map;
-    std::pair<int, int> start{};
-    std::pair<int, int> end{};
+    std::vector<std::vector<Point>> map_matrix;
+    Point start;
+    Point end{};
     std::vector<std::pair<int, int>> supply_points;  // 所有补给点
 
 public:
@@ -30,21 +30,11 @@ public:
     // 获取地图信息
     int getMapSize() const { return width * height; }
 
-    int getSupply() const { return supply; }
+    Point getStart() const { return start; }
 
-    std::pair<int, int> getStart() const { return start; }
-
-    std::pair<int, int> getEnd() const { return end; }
+    Point getEnd() const { return end; }
 
     std::vector<std::pair<int, int>> getSupplyPoints() const { return supply_points; }
-
-    // 用于回溯路径
-    void setParentToMap(std::pair<int, int> point_pos, std::pair<int, int> parent_pos) {
-        map[point_pos.first][point_pos.second].setParentPos(parent_pos);
-    }
-
-    std::pair<int, int>
-    getParentFromMap(std::pair<int, int> point_pos) const { return map[point_pos.first][point_pos.second].getParentPos(); }
 
 private:
     // 判断点是否在地图内

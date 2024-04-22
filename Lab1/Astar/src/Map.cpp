@@ -30,25 +30,28 @@ Map::Map(const std::string &input_file) {
     this->width = std::stoi(words[1]);  // 宽度 N，x 轴
     this->supply = std::stoi(words[2]);  // 补给 T
 
-    map.resize(width);
+    map_matrix.resize(width);
     for (int i = 0; i < width; i++) {
-        map[i].resize(height);
+        map_matrix[i].resize(height);
     }
 
     for (int j = height - 1; j >= 0; j--) {
         getline(file, line);
-        std::stringstream ss(line);
+        std::stringstream ss_2(line);
         for (int i = 0; i < width; i++) {
-            ss >> word;
+            ss_2 >> word;
             int type = std::stoi(word);
-            map[i][j].setType(type);
-            map[i][j].setX(i);
-            map[i][j].setY(j);
+            map_matrix[i][j].setType(type);
+            map_matrix[i][j].setX(i);
+            map_matrix[i][j].setY(j);
+            map_matrix[i][j].setSupply(0);
             if (type == 3) {
-                start = std::make_pair(i, j);
+                map_matrix[i][j].setSupply(supply); // 起点拥有最大补给
+                start = map_matrix[i][j];
             } else if (type == 4) {
-                end = std::make_pair(i, j);
+                end = map_matrix[i][j];
             } else if (type == 2) {
+                map_matrix[i][j].setSupply(supply);  // 补给点拥有最大补给
                 supply_points.emplace_back(i, j);
             }
         }
@@ -63,6 +66,9 @@ Map::Map(const std::string &input_file) {
  * @return 周围所有非障碍点
  */
 std::vector<Point> Map::getNeighbors(Point& point) {
+    if (point.getH() == -1) {
+        return {};  // 如果启发式函数值为 -1，说明该点已经饿死，没有邻居
+    }
     int x = point.getX();
     int y = point.getY();
     std::vector<Point> neighbors;
@@ -73,8 +79,8 @@ std::vector<Point> Map::getNeighbors(Point& point) {
     for (auto direction: directions) {
         int new_x = x + direction.first;
         int new_y = y + direction.second;
-        if (isInMap(new_x, new_y) && map[new_x][new_y].getType() != 1) {
-            neighbors.push_back(map[new_x][new_y]);
+        if (isInMap(new_x, new_y) && map_matrix[new_x][new_y].getType() != 1) {
+            neighbors.push_back(map_matrix[new_x][new_y]);
         }
     }
     return neighbors;
