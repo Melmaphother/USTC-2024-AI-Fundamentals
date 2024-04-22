@@ -71,7 +71,7 @@ int main() {
     std::string input_base = "../input/";
     std::string output_base = "../output/";
     int max_depth = 5;
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 9; i <= 9; i++) {
         std::cout << "Case " << i << ": ";
         std::string input_file = input_base + std::to_string(i) + ".txt";
         std::string output_file = output_base + std::to_string(i) + ".txt";

@@ -30,7 +30,8 @@ private:
     ChessBoardMatrix chessboard_matrix; // 棋盘
     ChessColor curr_color{Red}; // 当前下棋方
     bool is_stop_game{false}; // 是否结束游戏
-    std::vector<Move> moves; // 当前棋盘下可以走的动作
+    std::vector<Move> red_moves; // 红方所有可走的棋
+    std::vector<Move> black_moves; // 黑方所有可走的棋
 
 private:
     void getRookMoves(int x, int y);
@@ -47,10 +48,9 @@ public:
     int getCurrChessBoardScore();
     ChessBoard getChildChessBoardFromMove(const Move &move);
 
-    ChessBoardMatrix getChessBoardMatrix() const { return chessboard_matrix; }
     ChessColor getCurrColor() const { return curr_color; }
     bool isStopGame() const { return is_stop_game; }
-    std::vector<Move> getAllPossibleMoves() const { return moves; }
+    std::vector<Move> getAllPossibleMoves() const { return curr_color == Red ? red_moves : black_moves; }
 
 private:
     void updateMoves();

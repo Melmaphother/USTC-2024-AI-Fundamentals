@@ -1,1 +1,1 @@
-Red Cannon at (4, 4) moves to (6, 4)
+Red Rook at (3, 4) eats Black Advisor at (3, 9)
