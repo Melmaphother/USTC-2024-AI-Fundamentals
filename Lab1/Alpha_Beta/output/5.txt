@@ -1,1 +1,1 @@
-Red Knight at (1, 6) moves to (2, 8)
+N (1, 6) (2, 8)

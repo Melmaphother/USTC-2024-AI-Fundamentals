@@ -1,1 +1,1 @@
-Red Rook at (3, 4) eats Black Advisor at (3, 9)
+R (3, 4) (3, 9)

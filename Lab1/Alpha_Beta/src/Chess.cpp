@@ -18,20 +18,39 @@ std::map<char, ChessType> getChessTypeFromChar = {
         {'.', Empty}
 };
 
-std::map<ChessType, std::string> getChessStringFromType = {
-        {RedRook, "Red Rook"},
-        {RedKnight, "Red Knight"},
-        {RedCannon, "Red Cannon"},
-        {RedBishop, "Red Bishop"},
-        {RedAdvisor, "Red Advisor"},
-        {RedKing, "Red King"},
-        {RedPawn, "Red Pawn"},
-        {BlackRook, "Black Rook"},
-        {BlackKnight, "Black Knight"},
-        {BlackCannon, "Black Cannon"},
-        {BlackBishop, "Black Bishop"},
+std::map<ChessType, char> getCharFromChessType = {
+        {RedRook,      'R'},
+        {RedKnight,    'N'},
+        {RedCannon,    'C'},
+        {RedBishop,    'B'},
+        {RedAdvisor,   'A'},
+        {RedKing,      'K'},
+        {RedPawn,      'P'},
+        {BlackRook,    'r'},
+        {BlackKnight,  'n'},
+        {BlackCannon,  'c'},
+        {BlackBishop,  'b'},
+        {BlackAdvisor, 'a'},
+        {BlackKing,    'k'},
+        {BlackPawn,    'p'},
+        {Empty,        '.'}
+
+};
+
+std::map<ChessType, std::string> getChessNameFromType = {
+        {RedRook,      "Red Rook"},
+        {RedKnight,    "Red Knight"},
+        {RedCannon,    "Red Cannon"},
+        {RedBishop,    "Red Bishop"},
+        {RedAdvisor,   "Red Advisor"},
+        {RedKing,      "Red King"},
+        {RedPawn,      "Red Pawn"},
+        {BlackRook,    "Black Rook"},
+        {BlackKnight,  "Black Knight"},
+        {BlackCannon,  "Black Cannon"},
+        {BlackBishop,  "Black Bishop"},
         {BlackAdvisor, "Black Advisor"},
-        {BlackKing, "Black King"},
-        {BlackPawn, "Black Pawn"},
-        {Empty, "Empty"}
+        {BlackKing,    "Black King"},
+        {BlackPawn,    "Black Pawn"},
+        {Empty,        "Empty"}
 };

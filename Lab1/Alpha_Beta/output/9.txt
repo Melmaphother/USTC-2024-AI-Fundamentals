@@ -1,1 +1,1 @@
-Red Cannon at (4, 8) moves to (1, 8)
+C (4, 8) (1, 8)

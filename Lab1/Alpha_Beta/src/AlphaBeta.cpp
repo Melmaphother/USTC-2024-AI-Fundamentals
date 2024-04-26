@@ -2,6 +2,7 @@
 #include <cassert>
 #include <limits>
 #include <fstream>
+#include <thread>
 
 int AlphaBetaSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMaxNode) {
     bool is_my_turn = node.getCurrColor() == Red;
@@ -56,13 +57,16 @@ void WriteMoveToFile(const std::string &output_file, const Move &move) {
 
     // 如果吃子，输出格式："chess A" at (x1, y1) eats "chess B" at (x2, y2)
     // 如果不吃子，输出格式："chess A" at (x1, y1) moves to (x2, y2)
-    if (move.is_eat) {
-        out << getChessStringFromType[move.chess_type] << " at (" << move.init_x << ", " << move.init_y << ") eats "
-            << getChessStringFromType[move.eat_chess_type] << " at (" << move.next_x << ", " << move.next_y << ")";
-    } else {
-        out << getChessStringFromType[move.chess_type] << " at (" << move.init_x << ", " << move.init_y << ") moves to ("
-            << move.next_x << ", " << move.next_y << ")";
-    }
+//    if (move.is_eat) {
+//        out << getChessNameFromType[move.chess_type] << " at (" << move.init_x << ", " << move.init_y << ") eats "
+//            << getChessNameFromType[move.eat_chess_type] << " at (" << move.next_x << ", " << move.next_y << ")";
+//    } else {
+//        out << getChessNameFromType[move.chess_type] << " at (" << move.init_x << ", " << move.init_y << ") moves to ("
+//            << move.next_x << ", " << move.next_y << ")";
+//    }
+    // 直接输出为 棋子 (x1, y1) (x2, y2)
+    out << getCharFromChessType[move.chess_type] << " (" << move.init_x << ", " << move.init_y << ") (" << move.next_x
+        << ", " << move.next_y << ")";
 
     out.close();
 }
@@ -71,7 +75,7 @@ int main() {
     std::string input_base = "../input/";
     std::string output_base = "../output/";
     int max_depth = 5;
-    for (int i = 9; i <= 9; i++) {
+    for (int i = 1; i <= 10; i++) {
         std::cout << "Case " << i << ": ";
         std::string input_file = input_base + std::to_string(i) + ".txt";
         std::string output_file = output_base + std::to_string(i) + ".txt";

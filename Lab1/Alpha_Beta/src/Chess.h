@@ -27,8 +27,10 @@ enum ChessType {
     Empty = '.'
 };
 
-// c++17 之后这里可以加 inline 保证不会重复定义
+// c++17 之后这里可以改成 inline 保证不会重复定义
 extern std::map<char, ChessType> getChessTypeFromChar;
+
+extern std::map<ChessType, char> getCharFromChessType;
 
 extern std::map<ChessType, std::string> getChessStringFromType;
 
