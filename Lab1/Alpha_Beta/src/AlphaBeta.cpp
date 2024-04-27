@@ -33,6 +33,20 @@ int AlphaBetaSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMax
     }
 }
 
+Move getBestMoveFromChildren(ChessBoard &node, int depth, int root_score) {
+    const std::vector<Move> &moves = node.getAllPossibleMoves();
+    for (const Move &move: moves) {
+        ChessBoard child_node = node.getChildChessBoardFromMove(move);
+        int score = AlphaBetaSearch(child_node, depth - 1, std::numeric_limits<int>::min(),
+                                    std::numeric_limits<int>::max(), false);
+        if (score == root_score) {
+            return move;
+        }
+    }
+    std::cout << "No best move found!" << std::endl;
+    return {Empty, -1, -1, -1, -1};
+}
+
 std::pair<int, Move> AlphaBetaMultiThreadSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMaxNode) {
     bool is_my_turn = node.getCurrColor() == Red;
     assert(isMaxNode == is_my_turn);
