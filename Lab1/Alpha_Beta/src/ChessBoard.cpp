@@ -112,7 +112,7 @@ int ChessBoard::getCurrChessBoardScore() {
     int curr_score = curr_chess_power + curr_value + curr_move_score;
     int opponent_score = opponent_chess_power + opponent_value + opponent_move_score;
 
-    if (is_stop_game) curr_score = -1000000;   // 如果到当前棋局游戏停止了，那么说明当前方要么将/帅被吃掉，要么困毙，分数设置为一个极小值
+    if (is_stop_game) curr_score = END_GAME_SCORE;   // 如果到当前棋局游戏停止了，那么说明当前方要么将/帅被吃掉，要么困毙，分数设置为一个极小值
 
     return curr_color == Red ? curr_score - opponent_score : opponent_score - curr_score;
 }

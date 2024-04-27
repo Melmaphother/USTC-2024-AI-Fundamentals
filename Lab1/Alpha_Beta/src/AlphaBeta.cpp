@@ -1,6 +1,5 @@
-#include "ChessBoard.h"
+#include "AlphaBeta.h"
 #include <cassert>
-#include <limits>
 #include <fstream>
 #include <thread>
 
@@ -34,18 +33,40 @@ int AlphaBetaSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMax
     }
 }
 
-Move getBestMoveFromChildren(ChessBoard &node, int depth, int root_score) {
+std::pair<int, Move> AlphaBetaMultiThreadSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMaxNode) {
+    bool is_my_turn = node.getCurrColor() == Red;
+    assert(isMaxNode == is_my_turn);
+    assert(depth >= 1);
+
+    if (node.isStopGame()) {
+        return {END_GAME_SCORE, {Empty, -1, -1, -1, -1}};
+    }
+
     const std::vector<Move> &moves = node.getAllPossibleMoves();
-    for (const Move &move: moves) {
-        ChessBoard child_node = node.getChildChessBoardFromMove(move);
-        int score = AlphaBetaSearch(child_node, depth - 1, std::numeric_limits<int>::min(),
-                                    std::numeric_limits<int>::max(), false);
-        if (score == root_score) {
-            return move;
+    std::vector<std::thread> threads(moves.size());
+    std::vector<int> scores(moves.size());
+    for (int i = 0; i < moves.size(); i++) {
+        threads.emplace_back([&, i]() {
+            ChessBoard child_node = node.getChildChessBoardFromMove(moves[i]);
+            scores[i] = AlphaBetaSearch(child_node, depth - 1, alpha, beta, !isMaxNode);
+        });
+    }
+    // 等待所有线程结束
+    for (std::thread &thread: threads) {
+        if (thread.joinable()) {
+            thread.join();
         }
     }
-    std::cout << "No best move found!" << std::endl;
-    return {Empty, -1, -1, -1, -1};
+
+    int best_score = isMaxNode ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
+    int best_move_index = -1;
+    for (int i = 0; i < moves.size(); i++) {
+        if ((isMaxNode && scores[i] > best_score) || (!isMaxNode && scores[i] < best_score)) {
+            best_score = scores[i];
+            best_move_index = i;
+        }
+    }
+    return {best_score, moves[best_move_index]};
 }
 
 void WriteMoveToFile(const std::string &output_file, const Move &move) {
@@ -71,22 +92,3 @@ void WriteMoveToFile(const std::string &output_file, const Move &move) {
     out.close();
 }
 
-int main() {
-    std::string input_base = "../input/";
-    std::string output_base = "../output/";
-    int max_depth = 5;
-    for (int i = 1; i <= 10; i++) {
-        std::cout << "Case " << i << ": ";
-        std::string input_file = input_base + std::to_string(i) + ".txt";
-        std::string output_file = output_base + std::to_string(i) + ".txt";
-
-        // 从输入文件中读取棋盘
-        ChessBoard chessboard(input_file);
-        // AlphaBeta 搜索
-        int score = AlphaBetaSearch(chessboard, max_depth, std::numeric_limits<int>::min(),
-                                    std::numeric_limits<int>::max(), true);
-        std::cout << score << std::endl;
-        Move best_move = getBestMoveFromChildren(chessboard, max_depth, score);
-        WriteMoveToFile(output_file, best_move);
-    }
-}

@@ -8,6 +8,8 @@
 #include "Chess.h"
 
 typedef std::vector<std::vector<ChessType>> ChessBoardMatrix;
+#define END_GAME_SCORE (-1000000)
+
 
 // 动作结构体
 struct Move {
