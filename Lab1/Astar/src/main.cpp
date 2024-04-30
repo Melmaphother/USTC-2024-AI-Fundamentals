@@ -8,7 +8,7 @@ int main() {
     std::string output_base = "../output/output_";
     std::string heuristic_function = "non-trivial";
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i <= 9; i++) {
+    for (int i = 0; i <= 10; i++) {
         std::string input_file = input_base + std::to_string(i) + ".txt";
         std::string output_file = output_base + std::to_string(i) + ".txt";
         std::cout << "Processing " << input_file << "..." << std::endl;
