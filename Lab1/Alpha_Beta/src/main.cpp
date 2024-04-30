@@ -1,12 +1,53 @@
 #include "AlphaBeta.h"
 #include <limits>
 #include <chrono>
+#include <algorithm>
 
-int main() {
+std::pair<bool, std::string> getCmdOption(char **begin, char **end,
+                                          const std::string &option) {
+    char **itr = std::find(begin, end, option);
+    if (itr != end && ++itr != end) { return std::make_pair(true, *itr); }
+    return std::make_pair(false, "");
+}
+
+bool cmdOptionExists(char **begin, char **end, const std::string &option) {
+    return std::find(begin, end, option) != end;
+}
+
+int main(int argc, char **argv) {
+    auto help_info = cmdOptionExists(argv, argv + argc, "-h")
+            || cmdOptionExists(argv, argv + argc, "--help");
+    if (help_info) {
+        std::cout << "-h, --help: Show help information" << std::endl;
+        std::cout << "--depth: Specify the depth of the search tree" << std::endl;
+        std::cout << "-m, --multi-thread: Use multi-thread to speed up the search" << std::endl;
+        std::cout << "--input: Specify the base input file path" << std::endl;
+        std::cout << "--output: Specify the base output file path" << std::endl;
+    }
+
+    auto is_multi_thread = cmdOptionExists(argv, argv + argc, "--multi-thread")
+                           || cmdOptionExists(argv, argv + argc, "-m");
+
+    int max_depth;
+    auto get_depth = getCmdOption(argv, argv + argc, "--depth");
+    if (!get_depth.first) {
+        std::cerr << "Please specify the depth!" << std::endl;
+        return 0;
+    } else {
+        max_depth = std::stoi(get_depth.second);
+        // std::cout << "Depth: " << get_depth.second << std::endl;
+    }
+
     std::string input_base = "../input/";
-    std::string output_base = "../output/";
-    int max_depth = 5;
-    bool is_multi_thread = true;
+    std::string output_base = "../output/output_";
+    auto get_input = getCmdOption(argv, argv + argc, "--input");
+    auto get_output = getCmdOption(argv, argv + argc, "--output");
+    if (get_input.first) {
+        input_base = get_input.second;
+    }
+    if (get_output.first) {
+        output_base = get_output.second;
+    }
 
     auto t0 = std::chrono::high_resolution_clock::now();
     for (int i = 1; i <= 10; i++) {
