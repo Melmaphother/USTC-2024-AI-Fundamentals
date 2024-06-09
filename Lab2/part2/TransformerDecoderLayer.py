@@ -85,14 +85,17 @@ class TopKRouter(nn.Module):
     def forward(self, x):
         scores = self.top_k_router(x)  # (batch_size, seq_len, num_experts)
 
-        _, top_k_indices = torch.topk(scores, self.active_experts, dim=-1)
+        top_k_values, top_k_indices = torch.topk(scores, self.active_experts,
+                                                 dim=-1)  # (batch_size, seq_len, active_experts)
 
-        mask = torch.zeros_like(scores).scatter(-1, top_k_indices, 1.0)  # 最后一维上 top_k_indices 的位置为 1，其余为 0
+        mask = torch.zeros_like(scores).scatter(-1, top_k_indices, 1)  # (batch_size, seq_len, num_experts)
+
+        # mask 中被选中的位置为 1，未被选中的位置为 0
 
         masked_scores = scores.masked_fill(mask == 0, float('-inf'))
-        router_output = torch.softmax(masked_scores, dim=-1)
+        router_weight = torch.softmax(masked_scores, dim=-1)
 
-        return router_output, top_k_indices
+        return router_weight, mask
 
 
 class SparseMoE(nn.Module):
@@ -101,38 +104,30 @@ class SparseMoE(nn.Module):
         self.embed_dim = embed_dim
         self.num_experts = num_experts
         self.active_experts = active_experts
-        self.Experts = nn.ModuleList([Expert(self.embed_dim) for _ in range(self.num_experts)])
-        self.Router = TopKRouter(self.embed_dim, self.num_experts, self.active_experts)
+        self.experts = nn.ModuleList([Expert(self.embed_dim) for _ in range(self.num_experts)])
+        self.router = TopKRouter(self.embed_dim, self.num_experts, self.active_experts)
 
     def forward(self, x):
-        router_output, top_k_indices = self.Router(x)
+        batch_size, seq_len, _ = x.shape
+        router_output, mask = self.router(x)
 
-        batch_size, seq_len, embed_dim = x.size()
-        expert_outputs = torch.zeros_like(x)
+        # 初始化一个全0的输出张量
+        outputs = torch.zeros_like(x)
 
-        # 遍历每个序列的 embedding
-        for i in range(seq_len):
-            seq_input = x[:, i, :]  # (batch_size, embed_dim)
-            router_output_i = router_output[:, i, :]  # (batch_size, num_experts)
-            active_experts_output = torch.zeros(batch_size, embed_dim).to(x.device)
+        # 遍历所有专家并将输出加权累加
+        for i, expert in enumerate(self.experts):
+            expert_output = expert(x)  # 获取当前专家的输出
+            # 使用mask和router_output来加权输出
+            weight = router_output[:, :, i:i + 1] * mask[:, :, i:i + 1]
+            outputs += weight * expert_output
 
-            # 遍历每个 experts，计算加权输出
-            for batch_idx in range(batch_size):
-                for j in range(self.active_experts):
-                    expert_idx = top_k_indices[batch_idx, i, j].item()  # 获取单个整数索引
-                    expert_output = self.Experts[expert_idx](seq_input[batch_idx].unsqueeze(0))  # (1, embed_dim)
-                    active_experts_output[batch_idx] += router_output_i[batch_idx, expert_idx].unsqueeze(
-                        -1) * expert_output.squeeze(0)
-
-            expert_outputs[:, i, :] = active_experts_output
-
-        return expert_outputs
+        return outputs
 
 
 class PositionalEncoding(nn.Module):
     def __init__(self, seq_len: int, embed_dim: int, dropout: float):
         super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
+        self.dropout = nn.Dropout(dropout)
 
         position = torch.arange(0, seq_len).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, embed_dim, 2) * -(torch.log(torch.tensor(10000.0)) / embed_dim))
@@ -143,7 +138,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
-        x = x + self.pe[:, :x.size(1), :]
+        x = x + self.pe
         return self.dropout(x)
 
 

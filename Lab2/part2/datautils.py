@@ -1,8 +1,13 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
-from torch.utils.data import random_split
+from torch.utils.data import Dataset
 from transformers import BertTokenizer
 import tiktoken
+import os
+
+os.environ['CURL_CA_BUNDLE'] = ''
+os.environ['HTTP_PROXY'] = "http://127.0.0.1:7897"
+os.environ['HTTPS_PROXY'] = "http://127.0.0.1:7897"
+os.environ['ALL_PROXY'] = "socks5://127.0.0.1:7897"
 
 
 class Tokenizer:
@@ -33,18 +38,23 @@ class Tokenizer:
 
 
 class ShakespeareDataset(Dataset):
-    def __init__(self, datapath: str, tokenizer: str = 'custom', chunk_size: int = 100):
+    def __init__(self, datapath: str, tokenizer_mode: str = 'custom', chunk_size: int = 100):
         with open(datapath, 'r', encoding='utf-8') as f:
             self.dataset = f.read()
         self.chunk_size = chunk_size
-        if tokenizer == 'custom':
-            self.tokenizer = Tokenizer(datapath)
-        elif tokenizer == 'bert':
-            self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        elif tokenizer == 'tiktoken':
-            self.tokenizer = tiktoken.get_encoding("cl100k_base")
-
-        self.encoded_dataset = self.tokenizer.encode(self.dataset)
+        self.tokenizer_mode = tokenizer_mode
+        if tokenizer_mode == 'custom':
+            tokenizer = Tokenizer(datapath)
+            self.vocab_size = tokenizer.get_vocab_size()
+            self.encoded_dataset = tokenizer.encode(self.dataset)
+        elif tokenizer_mode == 'bert':
+            tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+            self.vocab_size = tokenizer.vocab_size
+            self.encoded_dataset = tokenizer.encode(self.dataset, add_special_tokens=True)
+        elif tokenizer_mode == 'tiktoken':
+            tokenizer = tiktoken.get_encoding("cl100k_base")
+            self.vocab_size = None  # TODO
+            self.encoded_dataset = tokenizer.encode(self.dataset)
 
     def __len__(self):
         return len(self.encoded_dataset) - self.chunk_size
@@ -52,15 +62,13 @@ class ShakespeareDataset(Dataset):
     def __getitem__(self, idx):
         chunk = self.encoded_dataset[idx:idx + self.chunk_size]
         label = self.encoded_dataset[idx + 1:idx + self.chunk_size + 1]
+        # 转成 tensor
+        chunk = torch.tensor(chunk, dtype=torch.long)
+        label = torch.tensor(label, dtype=torch.long)
         return chunk, label
 
+    def get_vocab_size(self):
+        return self.vocab_size
 
-def create_dataloader(datapath: str, tokenizer: str = 'custom', chunk_size: int = 200, batch_size: int = 2,
-                      shuffle: bool = True):
-    dataset = ShakespeareDataset(datapath, tokenizer, chunk_size)
-    train_size = int(0.8 * len(dataset))
-    val_size = len(dataset) - train_size
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=shuffle)
-    return train_loader, val_loader
+
+
