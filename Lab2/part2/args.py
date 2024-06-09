@@ -24,4 +24,4 @@ args = parse_args()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 args.device = device
 
-args.tokenizer = 'bert'
+args.tokenizer_mode = 'bert'

@@ -1,12 +1,18 @@
 import torch
 from tqdm import tqdm
 import os
+import matplotlib.pyplot as plt
+from datautils import generate_tgt_mask
 
 
-def generate_tgt_mask(seq_len):
-    """生成上三角的掩蔽矩阵，防止看到未来的词"""
-    mask = torch.tril(torch.ones(seq_len, seq_len)).unsqueeze(0)
-    return mask
+def plot_loss(loss_all, title):
+    plt.plot(loss_all, label=title)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    title = title.lower().replace(' ', '_')
+    plt.savefig(f'{title}.png')
+    plt.close()
 
 
 class Trainer:
@@ -24,9 +30,13 @@ class Trainer:
 
     def train(self):
         best_val_loss = float('inf')
+        train_loss_all = []
+        val_loss_all = []
         for epoch in range(self.epochs):
             train_loss = self._train_single_epoch()
             val_loss = self._val_single_epoch()
+            train_loss_all.append(train_loss)
+            val_loss_all.append(val_loss)
 
             print(f"Epoch {epoch + 1}/{self.epochs}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
 
@@ -35,6 +45,10 @@ class Trainer:
                 if not os.path.exists("models"):
                     os.makedirs("models")
                 torch.save(self.model.state_dict(), "models/best_model.pth")
+
+        # 绘制曲线
+        plot_loss(train_loss_all, "Train Loss")
+        plot_loss(val_loss_all, "Val Loss")
 
     def _train_single_epoch(self):
         self.model.train()

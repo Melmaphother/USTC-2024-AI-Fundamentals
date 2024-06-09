@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from datautils import generate_tgt_mask
 
 
 class Attention(nn.Module):
@@ -191,6 +193,8 @@ class SparseMoETransformer(nn.Module):
             active_experts: int,
             dropout: float
     ):
+        self.seq_len = seq_len
+        self.vocab_size = vocab_size
         super(SparseMoETransformer, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.pos_encoder = PositionalEncoding(seq_len, embed_dim, dropout)
@@ -209,3 +213,28 @@ class SparseMoETransformer(nn.Module):
 
         output = self.out_linear(x)
         return output
+
+    def generate(self, input_tokens, max_new_tokens):
+        device = next(self.parameters()).device
+        input_tokens = input_tokens.to(device)
+
+        if input_tokens.size(1) >= self.seq_len:
+            input_tokens = input_tokens[:, :self.seq_len]
+        else:
+            input_tokens = F.pad(input_tokens, (0, self.seq_len - input_tokens.size(1)))
+
+        for _ in range(max_new_tokens):
+            if input_tokens.size(1) >= self.seq_len:
+                input_tokens = input_tokens[:, -self.seq_len:]
+
+            tgt_mask = generate_tgt_mask(input_tokens.size(1)).to(device)
+            output = self(input_tokens, tgt_mask=tgt_mask)
+            last_token_logits = output[:, -1, :]  # 取最后一个 token 的 logits
+            probs = F.softmax(last_token_logits, dim=-1)
+            next_token = torch.multinomial(probs, num_samples=1)
+            input_tokens = torch.cat([input_tokens, next_token], dim=-1)
+
+            if next_token.item() == self.vocab_size - 1:  # Assuming the last vocab index is an EOS token
+                break
+
+        return input_tokens

@@ -1,7 +1,5 @@
 import torch
 from torch.utils.data import Dataset
-from transformers import BertTokenizer
-import tiktoken
 import os
 
 os.environ['CURL_CA_BUNDLE'] = ''
@@ -25,11 +23,11 @@ class Tokenizer:
             self.char2idx[char] = idx
             self.idx2char[idx] = char
 
-    def encode(self, sentence: str) -> torch.Tensor:
+    def encode(self, sentence):
         indices = [self.char2idx.get(char, 0) for char in sentence]
         return torch.tensor([1] + indices + [2], dtype=torch.long)
 
-    def decode(self, ids: torch.Tensor) -> str:
+    def decode(self, ids):
         chars = [self.idx2char[_id.item()] for _id in ids]
         return ''.join(chars[1:-1])
 
@@ -38,21 +36,19 @@ class Tokenizer:
 
 
 class ShakespeareDataset(Dataset):
-    def __init__(self, datapath: str, tokenizer_mode: str = 'custom', chunk_size: int = 100):
+    def __init__(self, datapath: str, tokenizer_mode: str, tokenizer, chunk_size: int):
         with open(datapath, 'r', encoding='utf-8') as f:
             self.dataset = f.read()
         self.chunk_size = chunk_size
         self.tokenizer_mode = tokenizer_mode
+        self.tokenizer = tokenizer
         if tokenizer_mode == 'custom':
-            tokenizer = Tokenizer(datapath)
             self.vocab_size = tokenizer.get_vocab_size()
             self.encoded_dataset = tokenizer.encode(self.dataset)
         elif tokenizer_mode == 'bert':
-            tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
             self.vocab_size = tokenizer.vocab_size
             self.encoded_dataset = tokenizer.encode(self.dataset, add_special_tokens=True)
         elif tokenizer_mode == 'tiktoken':
-            tokenizer = tiktoken.get_encoding("cl100k_base")
             self.vocab_size = None  # TODO
             self.encoded_dataset = tokenizer.encode(self.dataset)
 
@@ -71,4 +67,7 @@ class ShakespeareDataset(Dataset):
         return self.vocab_size
 
 
-
+def generate_tgt_mask(seq_len):
+    """生成上三角的掩蔽矩阵，防止看到未来的词"""
+    mask = torch.tril(torch.ones(seq_len, seq_len)).unsqueeze(0)
+    return mask
