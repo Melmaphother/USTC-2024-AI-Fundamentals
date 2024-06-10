@@ -5,13 +5,16 @@ import matplotlib.pyplot as plt
 from datautils import generate_tgt_mask
 
 
-def plot_loss(loss_all, title):
+def plot_loss(loss_all, title, save_path="results"):
     plt.plot(loss_all, label=title)
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
     title = title.lower().replace(' ', '_')
-    plt.savefig(f'{title}.png')
+    if save_path is not None:
+        plt.savefig(f'{save_path}/{title}.png')
+    else:
+        plt.savefig(f'{title}.png')
     plt.close()
 
 
@@ -39,6 +42,10 @@ class Trainer:
             val_loss_all.append(val_loss)
 
             print(f"Epoch {epoch + 1}/{self.epochs}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+            if not os.path.exists("results"):
+                os.makedirs("results")
+            with open("results/train_loss.txt", "a") as f:
+                f.write(f"Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}\n")
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
@@ -96,17 +103,21 @@ def test(args, model, test_dataloader, criterion):
     model.to(device)
 
     model.eval()
-    for epoch in range(args.epochs):
-        epoch_loss = 0
-        for batch in tqdm(test_dataloader, desc="Testing"):
-            inputs, targets = batch
-            inputs, targets = inputs.to(device), targets.to(device)
+    test_loss = 0
+    for batch in tqdm(test_dataloader, desc="Testing"):
+        inputs, targets = batch
+        inputs, targets = inputs.to(device), targets.to(device)
 
-            tgt_mask = generate_tgt_mask(inputs.size(1)).to(device)
+        tgt_mask = generate_tgt_mask(inputs.size(1)).to(device)
 
-            output = model(inputs, tgt_mask=tgt_mask)
-            loss = criterion(output.view(-1, output.size(-1)), targets.view(-1))
+        output = model(inputs, tgt_mask=tgt_mask)
+        loss = criterion(output.view(-1, output.size(-1)), targets.view(-1))
 
-            epoch_loss += loss.item()
+        test_loss += loss.item()
 
-        print(f"Epoch {epoch + 1}/{args.epochs}: Test Loss: {epoch_loss / len(test_dataloader):.4f}")
+    test_loss = test_loss / len(test_dataloader)
+    print(f"Test Loss: {test_loss:.4f}")
+    if not os.path.exists("results"):
+        os.makedirs("results")
+    with open("results/test_loss.txt", "a") as f:
+        f.write(f"Test Loss: {test_loss:.4f}\n")

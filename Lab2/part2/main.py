@@ -115,3 +115,10 @@ if __name__ == '__main__':
     # main()
     generate_text("To be or not to be, that is the question:", max_len=100)
     generate_text("I could pick my lance", max_len=100)
+
+    origin_text = """
+Would the nobility lay aside their ruth,
+And let me use my sword, I'll make a quarry
+With thousands of these quarter'd slaves, as high
+As I could pick my lance."""
+    generate_text(origin_text, max_len=100)

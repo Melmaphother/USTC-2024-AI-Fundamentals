@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument('--n_heads', type=int, default=4, help='Number of attention heads.')
     parser.add_argument('--num_experts', type=int, default=4, help='Number of experts in SparseMoE.')
     parser.add_argument('--active_experts', type=int, default=2, help='Number of active experts in SparseMoE.')
-    parser.add_argument('--epochs', type=int, default=10, help='Number of training epochs.')
+    parser.add_argument('--epochs', type=int, default=20, help='Number of training epochs.')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate.')
     return parser.parse_args()
 
