@@ -46,7 +46,7 @@ def main():
         n_heads=args.n_heads,
         num_experts=args.num_experts,
         active_experts=args.active_experts,
-        dropout=0.1
+        dropout=args.dropout
     ).to(args.device)
 
     # 损失函数和优化器
@@ -112,7 +112,7 @@ def generate_text(input_text: str, max_len: int = 100):
 
 
 if __name__ == '__main__':
-    # main()
+    main()
     generate_text("To be or not to be, that is the question:", max_len=100)
     generate_text("I could pick my lance", max_len=100)
 

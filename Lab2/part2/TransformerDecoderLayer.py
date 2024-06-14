@@ -54,7 +54,6 @@ class MultiHeadAttention(nn.Module):
             for attention_layer in self.multi_head_attention_layers
         ], dim=-1)
         output = self.out_linear(attention_outputs)
-        output = self.dropout(output)
         return output
 
 

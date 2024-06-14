@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument('--active_experts', type=int, default=2, help='Number of active experts in SparseMoE.')
     parser.add_argument('--epochs', type=int, default=20, help='Number of training epochs.')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate.')
+    parser.add_argument('--dropout', type=float, default=0.1, help='Dropout rate.')
     return parser.parse_args()
 
 

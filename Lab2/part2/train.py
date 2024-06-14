@@ -35,6 +35,11 @@ class Trainer:
         best_val_loss = float('inf')
         train_loss_all = []
         val_loss_all = []
+        if not os.path.exists("results"):
+            os.makedirs("results")
+        # 清空文件
+        with open("results/train_loss.txt", "w"):
+            pass
         for epoch in range(self.epochs):
             train_loss = self._train_single_epoch()
             val_loss = self._val_single_epoch()
@@ -42,8 +47,6 @@ class Trainer:
             val_loss_all.append(val_loss)
 
             print(f"Epoch {epoch + 1}/{self.epochs}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
-            if not os.path.exists("results"):
-                os.makedirs("results")
             with open("results/train_loss.txt", "a") as f:
                 f.write(f"Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}\n")
 
@@ -119,5 +122,5 @@ def test(args, model, test_dataloader, criterion):
     print(f"Test Loss: {test_loss:.4f}")
     if not os.path.exists("results"):
         os.makedirs("results")
-    with open("results/test_loss.txt", "a") as f:
+    with open("results/test_loss.txt", "w") as f:
         f.write(f"Test Loss: {test_loss:.4f}\n")
