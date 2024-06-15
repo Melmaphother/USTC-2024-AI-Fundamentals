@@ -13,7 +13,7 @@ private:
     int supply{};
     std::vector<std::vector<Point>> map_matrix;
     Point start;
-    Point end{};
+    Point end;
     std::vector<std::pair<int, int>> supply_points;  // 所有补给点
 
 public:

@@ -10,7 +10,7 @@
 
 struct ComparePoint {
     bool operator()(const Point &p1, const Point &p2) {
-        return p1.getF() < p2.getF();
+        return p1.f < p2.f;
     }
 };
 
@@ -33,7 +33,7 @@ private:
 
     std::string output_file;
 
-    std::string heuristic_function;
+    std::string heuristic_type;
 
     int status;
 
@@ -46,11 +46,11 @@ public:
 
 
 private:
-    int HeuristicFunction(Point &point, int curr_supply);  // 启发式函数
+    int heuristicFunc(Point &point, int curr_supply);  // 启发式函数
     static bool
     isInSupplyRegion(std::pair<int, int> point_pos, std::pair<int, int> center_point_pos, int r);  // 判断点是否在当前补给可达最大范围内
-    void GetResult();  // 反向遍历 close_list，获取路径
-    void OutputToFile();  // 将结果输出到文件
+    void getResult();  // 反向遍历 close_list，获取路径
+    void outputToFile();  // 将结果输出到文件
 };
 
 

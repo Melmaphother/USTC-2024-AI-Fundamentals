@@ -5,69 +5,33 @@
 #include <cmath>
 #include <utility>
 
-class Point {
-private:
+enum class PointType {
+    Passage = '0',  // 可通行点
+    Block = '1',  // 障碍
+    Supply = '2',  // 补给点
+    Start = '3',  // 起点
+    End = '4'  // 终点
+};
+
+struct Point {
     int x{};
     int y{};
     std::pair<int, int> parent{};
     int g{};
     int h{};
     int f{};
-
-    int type{};
-    /*
-     * 0 ：可通行
-       1 ：不可通行
-       2 ：补给点
-       3 ：起点
-       4 ：终点
-     */
+    PointType type{PointType::Passage};
     int supply{};
 
-public:
     Point() = default;
 
     explicit Point(std::pair<int, int> point) : x(point.first), y(point.second) {}
 
-    inline void setX(int _x) { this->x = _x; }
-
-    inline int getX() const { return x; }
-
-    inline void setY(int _y) { this->y = _y; }
-
-    inline int getY() const { return y; }
-
-    inline std::pair<int, int> getPos() const { return std::make_pair(x, y); }
-
-    inline void setParentPos(std::pair<int, int> _parent) { this->parent = _parent; }
-
-    inline std::pair<int, int> getParentPos() const { return parent; }
-
-    inline void setG(int _g) {
-        this->g = _g;
-        this->f = g + h;
-    }
-
-    inline int getG() const { return g; }
-
-    inline void setH(int _h) {
-        this->h = _h;
-        this->f = g + h;
-    }
-
-    inline int getH() const { return h; }
-
-    inline int getF() const { return f; }
-
-    inline void setType(int _type) { this->type = _type; }
-    inline int getType() const { return type; }
-
-    inline void setSupply(int _supply) { this->supply = _supply; }
-    inline int getSupply() const { return supply; }
-
     inline bool operator==(const Point &p) const { return x == p.x && y == p.y; }
 
     inline bool operator!=(const Point &p) const { return x != p.x || y != p.y; }
+
+    inline std::pair<int, int> getPos() const { return {x, y}; }
 
     inline int distance(const Point &p) const { return abs(x - p.x) + abs(y - p.y); }
 };
