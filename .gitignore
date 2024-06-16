@@ -2,5 +2,6 @@ __pycache__
 .idea
 .vscode
 cmake-build-debug
+cmake-build-release
 Lab1/ref
 .vs
