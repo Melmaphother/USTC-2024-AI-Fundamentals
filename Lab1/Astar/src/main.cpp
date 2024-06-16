@@ -6,9 +6,9 @@
 int main() {
     std::string input_base = "../input/input_";
     std::string output_base = "../output/output_";
-    std::string heuristic_type = "non-trivial";
+    std::string heuristic_type = "trivial";
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i <= 10; i++) {
+    for (int i = 8; i <= 8; i++) {
         std::string input_file = input_base + std::to_string(i) + ".txt";
         std::string output_file = output_base + std::to_string(i) + ".txt";
         std::cout << "Processing " << input_file << "..." << std::endl;

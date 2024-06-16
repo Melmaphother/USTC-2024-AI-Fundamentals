@@ -1,11 +1,12 @@
 #include "AlphaBeta.h"
-#include <cassert>
 #include <fstream>
 #include <thread>
 
-int AlphaBetaSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMaxNode) {
+int alphaBetaSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMaxNode) {
     bool is_my_turn = node.getCurrColor() == Red;
-    assert(isMaxNode == is_my_turn);
+    if (isMaxNode != is_my_turn) {
+        throw std::runtime_error("isMaxNode is not consistent with current color!");
+    }
 
     if (depth == 0 || node.isStopGame()) {
         return node.getCurrChessBoardScore();
@@ -15,7 +16,7 @@ int AlphaBetaSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMax
     if (isMaxNode) {
         for (const Move &move: moves) {
             ChessBoard child_node = node.getChildChessBoardFromMove(move);
-            alpha = std::max(alpha, AlphaBetaSearch(child_node, depth - 1, alpha, beta, false));
+            alpha = std::max(alpha, alphaBetaSearch(child_node, depth - 1, alpha, beta, false));
             if (alpha >= beta) {
                 break;
             }
@@ -24,7 +25,7 @@ int AlphaBetaSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMax
     } else {
         for (const Move &move: moves) {
             ChessBoard child_node = node.getChildChessBoardFromMove(move);
-            beta = std::min(beta, AlphaBetaSearch(child_node, depth - 1, alpha, beta, true));
+            beta = std::min(beta, alphaBetaSearch(child_node, depth - 1, alpha, beta, true));
             if (alpha >= beta) {
                 break;
             }
@@ -37,7 +38,7 @@ Move getBestMoveFromChildren(ChessBoard &node, int depth, int root_score) {
     const std::vector<Move> &moves = node.getAllPossibleMoves();
     for (const Move &move: moves) {
         ChessBoard child_node = node.getChildChessBoardFromMove(move);
-        int score = AlphaBetaSearch(child_node, depth - 1, std::numeric_limits<int>::min(),
+        int score = alphaBetaSearch(child_node, depth - 1, std::numeric_limits<int>::min(),
                                     std::numeric_limits<int>::max(), false);
         if (score == root_score) {
             return move;
@@ -47,10 +48,14 @@ Move getBestMoveFromChildren(ChessBoard &node, int depth, int root_score) {
     return {Empty, -1, -1, -1, -1};
 }
 
-std::pair<int, Move> AlphaBetaMultiThreadSearch(ChessBoard &node, int depth, int alpha, int beta, bool isMaxNode) {
+std::pair<int, Move> alphaBetaSearchMultiThreads(ChessBoard &node, int depth, int alpha, int beta, bool isMaxNode) {
     bool is_my_turn = node.getCurrColor() == Red;
-    assert(isMaxNode == is_my_turn);
-    assert(depth >= 1);
+    if (isMaxNode != is_my_turn) {
+        throw std::runtime_error("isMaxNode is not consistent with current color!");
+    }
+    if (depth < 1) {
+        throw std::runtime_error("Depth should be at least 1!");
+    }
 
     if (node.isStopGame()) {
         return {END_GAME_SCORE, {Empty, -1, -1, -1, -1}};
@@ -62,11 +67,11 @@ std::pair<int, Move> AlphaBetaMultiThreadSearch(ChessBoard &node, int depth, int
     for (int i = 0; i < moves.size(); i++) {
         threads.emplace_back([&, i]() {
             ChessBoard child_node = node.getChildChessBoardFromMove(moves[i]);
-            scores[i] = AlphaBetaSearch(child_node, depth - 1, alpha, beta, !isMaxNode);
+            scores[i] = alphaBetaSearch(child_node, depth - 1, alpha, beta, !isMaxNode);
         });
     }
     // 等待所有线程结束
-    for (std::thread &thread: threads) {
+    for (auto &thread: threads) {
         if (thread.joinable()) {
             thread.join();
         }
@@ -83,7 +88,7 @@ std::pair<int, Move> AlphaBetaMultiThreadSearch(ChessBoard &node, int depth, int
     return {best_score, moves[best_move_index]};
 }
 
-void WriteMoveToFile(const std::string &output_file, const Move &move) {
+void writeMoveToFile(const std::string &output_file, const Move &move) {
     std::ofstream out(output_file);
     if (!out.is_open()) {
         std::cerr << "Failed to open output file: " << output_file << std::endl;

@@ -43,7 +43,7 @@ void Astar::AstarSearch() {
             bool is_in_close_list = close_list_iter != close_list.end();
             bool is_in_open_list = open_list_iter != open_list.end();
 
-            //int neighbor_g = neighbor.distance(map.getStart());
+            // int neighbor_g = neighbor.distance(map.getStart());
             int neighbor_g = curr_point.g + 1; // 两个都行其实
             // 非补给点的补给量为当前点的补给量减 1，补给点的补给量为其最大补给量（也就是本身）
             int neighbor_supply = neighbor.type == PointType::Supply ? neighbor.supply : curr_point.supply - 1;

@@ -35,7 +35,6 @@ int main(int argc, char **argv) {
         return 0;
     } else {
         max_depth = std::stoi(get_depth.second);
-        // std::cout << "Depth: " << get_depth.second << std::endl;
     }
 
     std::string input_base = "../input/";
@@ -59,16 +58,16 @@ int main(int argc, char **argv) {
         ChessBoard chessboard(input_file);
         // AlphaBeta 搜索
         if (is_multi_thread) {
-            auto best_result = AlphaBetaMultiThreadSearch(chessboard, max_depth, std::numeric_limits<int>::min(),
+            auto best_result = alphaBetaSearchMultiThreads(chessboard, max_depth, std::numeric_limits<int>::min(),
                                                           std::numeric_limits<int>::max(), true);
             std::cout << best_result.first << std::endl;
-            WriteMoveToFile(output_file, best_result.second);
+            writeMoveToFile(output_file, best_result.second);
         } else {
-            int best_score = AlphaBetaSearch(chessboard, max_depth, std::numeric_limits<int>::min(),
+            int best_score = alphaBetaSearch(chessboard, max_depth, std::numeric_limits<int>::min(),
                                              std::numeric_limits<int>::max(), true);
             std::cout << best_score << std::endl;
             Move best_move = getBestMoveFromChildren(chessboard, max_depth, best_score);
-            WriteMoveToFile(output_file, best_move);
+            writeMoveToFile(output_file, best_move);
         }
     }
     auto t1 = std::chrono::high_resolution_clock::now();
