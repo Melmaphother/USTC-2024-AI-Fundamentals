@@ -15,7 +15,7 @@ ChessBoard::ChessBoard(const std::string &input_file) {
     int curr_height = 9;
     while (std::getline(file, line)) {
         for (int i = 0; i < line.size(); i++) {
-            chessboard_matrix[i][curr_height] = getChessTypeFromChar[line[i]];
+            chessboard_matrix[i][curr_height] = static_cast<ChessType>(line[i]);
         }
         curr_height--;
         if (curr_height < 0) break;
@@ -34,10 +34,11 @@ void ChessBoard::updateMoves() {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 10; j++) {
             ChessType single_chess_type = chessboard_matrix[i][j];
-            if (single_chess_type == Empty) continue; // 空位置不需要考虑
+            if (single_chess_type == ChessType::Empty) continue; // 空位置不需要考虑
             // if (single_chess_color != curr_color) continue;
             // 不是当前下棋方的棋子，也需要考虑，因为如果当前下棋方不动某个棋子，对方在下一个回合可能会吃掉这个棋子
-            switch (std::tolower(single_chess_type)) {
+            auto single_chess_char = static_cast<char>(single_chess_type);
+            switch (std::tolower(single_chess_char)) {
                 case 'r':
                     getRookMoves(i, j);
                     break;
@@ -66,7 +67,7 @@ void ChessBoard::updateMoves() {
     }
 
     // 特殊的困毙情况
-    if (curr_color == Red && red_moves.empty() || curr_color == Black && black_moves.empty()) {
+    if (curr_color == ChessColor::Red && red_moves.empty() || curr_color == ChessColor::Black && black_moves.empty()) {
         is_stop_game = true;
     }
 }
@@ -87,50 +88,51 @@ int ChessBoard::getCurrChessBoardScore() {
         black_move_score += move.score;
     }
 
-    int curr_move_score = curr_color == Red ? red_move_score : black_move_score;
-    int opponent_move_score = curr_color == Red ? black_move_score : red_move_score;
+    int curr_move_score = curr_color == ChessColor::Red ? red_move_score : black_move_score;
+    int opponent_move_score = curr_color == ChessColor::Red ? black_move_score : red_move_score;
 
     int curr_chess_power = 0;
     int opponent_chess_power = 0;
-    int curr_value = 0;
-    int opponent_value = 0;
+    int curr_chess_value = 0;
+    int opponent_chess_value = 0;
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 10; j++) {
-            auto chess_type = chessboard_matrix[i][j];
-            if (chess_type == Empty) continue;
+            ChessType chess_type = chessboard_matrix[i][j];
+            if (chess_type == ChessType::Empty) continue;
             auto eval_matrix = getChessPowerEvalMatrix(chess_type);
-            auto chess_color = getChessColor(chess_type);
+            ChessColor chess_color = getChessColor(chess_type);
             if (chess_color == curr_color) {
                 curr_chess_power += eval_matrix[i][j];
-                curr_value += getChessValue(chess_type);
+                curr_chess_value += getChessValue(chess_type);
             } else {
                 opponent_chess_power += eval_matrix[i][j];
-                opponent_value += getChessValue(chess_type);
+                opponent_chess_value += getChessValue(chess_type);
             }
         }
     }
-    int curr_score = curr_chess_power + curr_value + curr_move_score;
-    int opponent_score = opponent_chess_power + opponent_value + opponent_move_score;
+    int curr_score = curr_chess_power + curr_chess_value + curr_move_score;
+    int opponent_score = opponent_chess_power + opponent_chess_value + opponent_move_score;
 
     if (is_stop_game) curr_score = END_GAME_SCORE;   // 如果到当前棋局游戏停止了，那么说明当前方要么将/帅被吃掉，要么困毙，分数设置为一个极小值
 
-    return curr_color == Red ? curr_score - opponent_score : opponent_score - curr_score;
+    return curr_color == ChessColor::Red ? curr_score - opponent_score : opponent_score - curr_score;
 }
 
 ChessBoard ChessBoard::getChildChessBoardFromMove(const Move &move) {
     ChessBoard child_chessboard = *this;
     // 子结点行棋方交换
-    child_chessboard.curr_color = (child_chessboard.curr_color == Red) ? Black : Red;
+    child_chessboard.curr_color = (child_chessboard.curr_color == ChessColor::Red) ? ChessColor::Black
+                                                                                   : ChessColor::Red;
     // 判断是否游戏结束
     if (move.is_eat) {
-        if (child_chessboard.curr_color == Red && move.eat_chess_type == RedKing
-            || child_chessboard.curr_color == Black && move.eat_chess_type == BlackKing) {
+        if (child_chessboard.curr_color == ChessColor::Red && move.eat_chess_type == ChessType::RedKing
+            || child_chessboard.curr_color == ChessColor::Black && move.eat_chess_type == ChessType::BlackKing) {
             child_chessboard.is_stop_game = true;
         }
     }
     // 移动棋子
     child_chessboard.chessboard_matrix[move.next_x][move.next_y] = child_chessboard.chessboard_matrix[move.init_x][move.init_y];
-    child_chessboard.chessboard_matrix[move.init_x][move.init_y] = Empty;
+    child_chessboard.chessboard_matrix[move.init_x][move.init_y] = ChessType::Empty;
     // 更新所有合法的走法
     child_chessboard.updateMoves();
     return child_chessboard;
@@ -142,63 +144,63 @@ void ChessBoard::getRookMoves(int x, int y) {
     //前后左右分别进行搜索，遇到棋子停止，不同阵营可以吃掉
     for (int i = x + 1; i < 9; i++) {
         Move move(chess_type, x, y, i, y);
-        if (chessboard_matrix[i][y] != Empty) {
+        if (chessboard_matrix[i][y] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[i][y]);
             if (obstacle_color != chess_color) {
                 // 车可以吃掉对方的棋子
                 move.score = getMoveValue(chessboard_matrix[i][y]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[i][y];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 
     for (int i = x - 1; i >= 0; i--) {
         Move move(chess_type, x, y, i, y);
-        if (chessboard_matrix[i][y] != Empty) {
+        if (chessboard_matrix[i][y] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[i][y]);
             if (obstacle_color != chess_color) {
                 move.score = getMoveValue(chessboard_matrix[i][y]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[i][y];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 
     for (int j = y + 1; j < 10; j++) {
         Move move(chess_type, x, y, x, j);
-        if (chessboard_matrix[x][j] != Empty) {
+        if (chessboard_matrix[x][j] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[x][j]);
             if (obstacle_color != chess_color) {
                 move.score = getMoveValue(chessboard_matrix[x][j]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[x][j];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 
     for (int j = y - 1; j >= 0; j--) {
         Move move(chess_type, x, y, x, j);
-        if (chessboard_matrix[x][j] != Empty) {
+        if (chessboard_matrix[x][j] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[x][j]);
             if (obstacle_color != chess_color) {
                 move.score = getMoveValue(chessboard_matrix[x][j]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[x][j];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 }
 
@@ -216,22 +218,22 @@ void ChessBoard::getKnightMoves(int x, int y) {
         // 跳出棋盘，丢弃
         if (next_x < 0 || next_x > 8 || next_y < 0 || next_y > 9) continue;
         // 蹩马腿，丢弃
-        if (chessboard_matrix[x + block_x[i]][y + block_y[i]] != Empty) continue;
+        if (chessboard_matrix[x + block_x[i]][y + block_y[i]] != ChessType::Empty) continue;
 
         Move move(chess_type, x, y, next_x, next_y);
-        if (chessboard_matrix[next_x][next_y] != Empty) {
+        if (chessboard_matrix[next_x][next_y] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[next_x][next_y]);
             if (obstacle_color != chess_color) {
                 // 马可以吃掉对方的棋子
                 move.score = getMoveValue(chessboard_matrix[next_x][next_y]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[next_x][next_y];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             // 遇到棋子，如果是己方的棋子，不能走
             continue;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 }
 
@@ -243,10 +245,10 @@ void ChessBoard::getCannonMoves(int x, int y) {
     ChessColor chess_color = getChessColor(chess_type); // 当前位置的棋子颜色
     for (int i = x + 1; i < 9; i++) {
         Move move(chess_type, x, y, i, y);
-        if (chessboard_matrix[i][y] != Empty) {
+        if (chessboard_matrix[i][y] != ChessType::Empty) {
             // 碰到第一个棋子，无论颜色，继续搜索
             for (int k = i + 1; k < 9; k++) {
-                if (chessboard_matrix[k][y] != Empty) {
+                if (chessboard_matrix[k][y] != ChessType::Empty) {
                     // 碰到第二个棋子，若是对方的棋子，则可以吃掉
                     ChessColor obstacle_color = getChessColor(chessboard_matrix[k][y]);
                     if (obstacle_color != chess_color) {
@@ -254,7 +256,7 @@ void ChessBoard::getCannonMoves(int x, int y) {
                         move.score = getMoveValue(chessboard_matrix[k][y]);
                         move.is_eat = true;
                         move.eat_chess_type = chessboard_matrix[k][y];
-                        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
                     }
                     break;
                 }
@@ -262,67 +264,67 @@ void ChessBoard::getCannonMoves(int x, int y) {
             // 无论是否打到对方的棋子，都要跳出外层循环
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 
     for (int i = x - 1; i >= 0; i--) {
         Move move(chess_type, x, y, i, y);
-        if (chessboard_matrix[i][y] != Empty) {
+        if (chessboard_matrix[i][y] != ChessType::Empty) {
             for (int k = i - 1; k >= 0; k--) {
-                if (chessboard_matrix[k][y] != Empty) {
+                if (chessboard_matrix[k][y] != ChessType::Empty) {
                     ChessColor obstacle_color = getChessColor(chessboard_matrix[k][y]);
                     if (obstacle_color != chess_color) {
                         move.score = getMoveValue(chessboard_matrix[k][y]);
                         move.is_eat = true;
                         move.eat_chess_type = chessboard_matrix[k][y];
-                        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
                     }
                     break;
                 }
             }
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 
     for (int j = y + 1; j < 10; j++) {
         Move move(chess_type, x, y, x, j);
-        if (chessboard_matrix[x][j] != Empty) {
+        if (chessboard_matrix[x][j] != ChessType::Empty) {
             for (int k = j + 1; k < 10; k++) {
-                if (chessboard_matrix[x][k] != Empty) {
+                if (chessboard_matrix[x][k] != ChessType::Empty) {
                     ChessColor obstacle_color = getChessColor(chessboard_matrix[x][k]);
                     if (obstacle_color != chess_color) {
                         move.score = getMoveValue(chessboard_matrix[x][k]);
                         move.is_eat = true;
                         move.eat_chess_type = chessboard_matrix[x][k];
-                        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
                     }
                     break;
                 }
             }
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 
     for (int j = y - 1; j >= 0; j--) {
         Move move(chess_type, x, y, x, j);
-        if (chessboard_matrix[x][j] != Empty) {
+        if (chessboard_matrix[x][j] != ChessType::Empty) {
             for (int k = j - 1; k >= 0; k--) {
-                if (chessboard_matrix[x][k] != Empty) {
+                if (chessboard_matrix[x][k] != ChessType::Empty) {
                     ChessColor obstacle_color = getChessColor(chessboard_matrix[x][k]);
                     if (obstacle_color != chess_color) {
                         move.score = getMoveValue(chessboard_matrix[x][k]);
                         move.is_eat = true;
                         move.eat_chess_type = chessboard_matrix[x][k];
-                        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
                     }
                     break;
                 }
             }
             break;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 }
 
@@ -337,25 +339,25 @@ void ChessBoard::getAdvisorMoves(int x, int y) {
     for (int i = 0; i < 4; i++) {
         int next_x = x + dx[i];
         int next_y = y + dy[i];
-        if (chess_color == Red) {
+        if (chess_color == ChessColor::Red) {
             if (next_x < 3 || next_x > 5 || next_y < 0 || next_y > 2) continue;
         } else {
             if (next_x < 3 || next_x > 5 || next_y < 7 || next_y > 9) continue;
         }
 
         Move move(chess_type, x, y, next_x, next_y);
-        if (chessboard_matrix[next_x][next_y] != Empty) {
+        if (chessboard_matrix[next_x][next_y] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[next_x][next_y]);
             if (obstacle_color != chess_color) {
                 move.score = getMoveValue(chessboard_matrix[next_x][next_y]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[next_x][next_y];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             // 遇到棋子，如果是己方的棋子，不能走
             continue;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 }
 
@@ -372,27 +374,27 @@ void ChessBoard::getBishopMoves(int x, int y) {
     for (int i = 0; i < 4; i++) {
         int next_x = x + dx[i];
         int next_y = y + dy[i];
-        if (chess_color == Red) {
+        if (chess_color == ChessColor::Red) {
             if (next_x < 0 || next_x > 8 || next_y < 0 || next_y > 4) continue;
         } else {
             if (next_x < 0 || next_x > 8 || next_y < 5 || next_y > 9) continue;
         }
 
         Move move(chess_type, x, y, next_x, next_y);
-        if (chessboard_matrix[next_x][next_y] != Empty) continue;
-        if (chessboard_matrix[x + block_x[i]][y + block_y[i]] != Empty) continue;
-        if (chessboard_matrix[next_x][next_y] != Empty) {
+        if (chessboard_matrix[next_x][next_y] != ChessType::Empty) continue;
+        if (chessboard_matrix[x + block_x[i]][y + block_y[i]] != ChessType::Empty) continue;
+        if (chessboard_matrix[next_x][next_y] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[next_x][next_y]);
             if (obstacle_color != chess_color) {
                 move.score = getMoveValue(chessboard_matrix[next_x][next_y]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[next_x][next_y];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             // 遇到棋子，如果是己方的棋子，不能走
             continue;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 }
 
@@ -404,12 +406,12 @@ void ChessBoard::getPawnMoves(int x, int y) {
     // 黑卒的过河位置：0 <= y <= 4
     ChessType chess_type = chessboard_matrix[x][y];  // 当前位置的棋子
     ChessColor chess_color = getChessColor(chess_type); // 当前位置的棋子颜色
-    if (chess_color == Red) {
+    if (chess_color == ChessColor::Red) {
         // 红卒未过河
         if (y >= 3 && y <= 4) {
             int next_y = y + 1;
             Move move(chess_type, x, y, x, next_y);
-            if (chessboard_matrix[x][next_y] != Empty) {
+            if (chessboard_matrix[x][next_y] != ChessType::Empty) {
                 ChessColor obstacle_color = getChessColor(chessboard_matrix[x][next_y]);
                 if (obstacle_color != chess_color) {
                     move.score = getMoveValue(chessboard_matrix[x][next_y]);
@@ -428,7 +430,7 @@ void ChessBoard::getPawnMoves(int x, int y) {
                 int next_y = y + dy[i];
                 if (next_x < 0 || next_x > 8 || next_y < 5 || next_y > 9) continue;
                 Move move(chess_type, x, y, next_x, next_y);
-                if (chessboard_matrix[next_x][next_y] != Empty) {
+                if (chessboard_matrix[next_x][next_y] != ChessType::Empty) {
                     ChessColor obstacle_color = getChessColor(chessboard_matrix[next_x][next_y]);
                     if (obstacle_color != chess_color) {
                         move.score = getMoveValue(chessboard_matrix[next_x][next_y]);
@@ -448,7 +450,7 @@ void ChessBoard::getPawnMoves(int x, int y) {
         if (y >= 5 && y <= 6) {
             int next_y = y - 1;
             Move move(chess_type, x, y, x, next_y);
-            if (chessboard_matrix[x][next_y] != Empty) {
+            if (chessboard_matrix[x][next_y] != ChessType::Empty) {
                 ChessColor obstacle_color = getChessColor(chessboard_matrix[x][next_y]);
                 if (obstacle_color != chess_color) {
                     move.score = getMoveValue(chessboard_matrix[x][next_y]);
@@ -468,7 +470,7 @@ void ChessBoard::getPawnMoves(int x, int y) {
                 if (next_x < 0 || next_x > 8 || next_y < 0 || next_y > 4) continue;
 
                 Move move(chess_type, x, y, next_x, next_y);
-                if (chessboard_matrix[next_x][next_y] != Empty) {
+                if (chessboard_matrix[next_x][next_y] != ChessType::Empty) {
                     ChessColor obstacle_color = getChessColor(chessboard_matrix[next_x][next_y]);
                     if (obstacle_color != chess_color) {
                         move.score = getMoveValue(chessboard_matrix[next_x][next_y]);
@@ -494,10 +496,10 @@ void ChessBoard::getKingMoves(int x, int y) {
     ChessType chess_type = chessboard_matrix[x][y];  // 当前位置的棋子
     ChessColor chess_color = getChessColor(chess_type); // 当前位置的棋子颜色
     // 首先考虑将帅直接对面的情况
-    if (chess_color == Red) {
+    if (chess_color == ChessColor::Red) {
         for (int j = y + 1; j < 10; j++) {
-            if (chessboard_matrix[x][j] != Empty) {
-                if (chessboard_matrix[x][j] == BlackKing) {
+            if (chessboard_matrix[x][j] != ChessType::Empty) {
+                if (chessboard_matrix[x][j] == ChessType::BlackKing) {
                     Move move(chess_type, x, y, x, j);
                     move.score = getMoveValue(chessboard_matrix[x][j]);
                     move.is_eat = true;
@@ -509,8 +511,8 @@ void ChessBoard::getKingMoves(int x, int y) {
         }
     } else {
         for (int j = y - 1; j >= 0; j--) {
-            if (chessboard_matrix[x][j] != Empty) {
-                if (chessboard_matrix[x][j] == RedKing) {
+            if (chessboard_matrix[x][j] != ChessType::Empty) {
+                if (chessboard_matrix[x][j] == ChessType::RedKing) {
                     Move move(chess_type, x, y, x, j);
                     move.score = getMoveValue(chessboard_matrix[x][j]);
                     move.is_eat = true;
@@ -527,25 +529,25 @@ void ChessBoard::getKingMoves(int x, int y) {
     for (int i = 0; i < 4; i++) {
         int next_x = x + dx[i];
         int next_y = y + dy[i];
-        if (chess_color == Red) {
+        if (chess_color == ChessColor::Red) {
             if (next_x < 3 || next_x > 5 || next_y < 0 || next_y > 2) continue;
         } else {
             if (next_x < 3 || next_x > 5 || next_y < 7 || next_y > 9) continue;
         }
 
         Move move(chess_type, x, y, next_x, next_y);
-        if (chessboard_matrix[next_x][next_y] != Empty) {
+        if (chessboard_matrix[next_x][next_y] != ChessType::Empty) {
             ChessColor obstacle_color = getChessColor(chessboard_matrix[next_x][next_y]);
             if (obstacle_color != chess_color) {
                 move.score = getMoveValue(chessboard_matrix[next_x][next_y]);
                 move.is_eat = true;
                 move.eat_chess_type = chessboard_matrix[next_x][next_y];
-                chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+                chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
             }
             // 遇到棋子，如果是己方的棋子，不能走
             continue;
         }
-        chess_color == Red ? red_moves.push_back(move) : black_moves.push_back(move);
+        chess_color == ChessColor::Red ? red_moves.push_back(move) : black_moves.push_back(move);
     }
 }
 

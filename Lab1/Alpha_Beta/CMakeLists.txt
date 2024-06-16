@@ -8,7 +8,6 @@ include_directories(src)
 add_executable(Alpha_Beta
         src/AlphaBeta.cpp
         src/AlphaBeta.h
-        src/Chess.cpp
         src/Chess.h
         src/ChessBoard.cpp
         src/ChessBoard.h

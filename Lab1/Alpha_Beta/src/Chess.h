@@ -4,12 +4,12 @@
 #include <map>
 #include <iostream>
 
-enum ChessColor {
+enum class ChessColor {
     Red = true,
     Black = false
 };
 
-enum ChessType {
+enum class ChessType {
     RedRook = 'R',
     RedKnight = 'N',
     RedCannon = 'C',
@@ -27,18 +27,12 @@ enum ChessType {
     Empty = '.'
 };
 
-// c++17 之后这里可以改成 inline 保证不会重复定义
-extern std::map<char, ChessType> getChessTypeFromChar;
-
-extern std::map<ChessType, char> getCharFromChessType;
-
-extern std::map<ChessType, std::string> getChessStringFromType;
-
 inline ChessColor getChessColor(ChessType type) {
-    if (type == Empty) {
+    if (type == ChessType::Empty) {
         std::cerr << "Empty chess type has no color!" << std::endl;
     }
-    return type >= 'A' && type <= 'Z' ? Red : Black;
+    auto chess_char = static_cast<char>(type);
+    return chess_char >= 'A' && chess_char <= 'Z' ? ChessColor::Red : ChessColor::Black;
 }
 
 #endif //ALPHA_BETA_CHESS_H
