@@ -180,7 +180,7 @@ class TransformerDecoderLayer(nn.Module):
         return x
 
 
-class SparseMoETransformer(nn.Module):
+class SparseMoETransformerDecoder(nn.Module):
     def __init__(
             self,
             vocab_size: int,
@@ -194,7 +194,7 @@ class SparseMoETransformer(nn.Module):
     ):
         self.seq_len = seq_len
         self.vocab_size = vocab_size
-        super(SparseMoETransformer, self).__init__()
+        super(SparseMoETransformerDecoder, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.pos_encoder = PositionalEncoding(seq_len, embed_dim, dropout)
         self.transformer_layers = nn.ModuleList([

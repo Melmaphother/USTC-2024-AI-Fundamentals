@@ -5,7 +5,7 @@ from args import args
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 from datautils import ShakespeareDataset, Tokenizer
-from TransformerDecoderLayer import SparseMoETransformer
+from model import SparseMoETransformerDecoder
 from train import Trainer, test
 from transformers import BertTokenizer
 import tiktoken
@@ -38,7 +38,7 @@ def main():
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
 
     # 初始化模型
-    model = SparseMoETransformer(
+    model = SparseMoETransformerDecoder(
         vocab_size=args.vocab_size,
         seq_len=args.seq_len,
         embed_dim=args.embed_dim,
@@ -82,7 +82,7 @@ def generate_text(input_text: str, max_len: int = 100):
     args.vocab_size = dataset.get_vocab_size()
 
     # 加载模型
-    model = SparseMoETransformer(
+    model = SparseMoETransformerDecoder(
         vocab_size=args.vocab_size,
         seq_len=args.seq_len,
         embed_dim=args.embed_dim,
