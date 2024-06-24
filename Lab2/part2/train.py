@@ -1,21 +1,7 @@
 import torch
 from tqdm import tqdm
-import os
-import matplotlib.pyplot as plt
 from datautils import generate_tgt_mask
-
-
-def plot_loss(loss_all, title, save_path="results"):
-    plt.plot(loss_all, label=title)
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.legend()
-    title = title.lower().replace(' ', '_')
-    if save_path is not None:
-        plt.savefig(f'{save_path}/{title}.png')
-    else:
-        plt.savefig(f'{title}.png')
-    plt.close()
+from torch.utils.tensorboard import SummaryWriter
 
 
 class Trainer:
@@ -30,35 +16,23 @@ class Trainer:
         self.val_dataloader = val_dataloader
 
         self.model.to(self.device)
+        self.save_path = args.save_path
+        self.model_path = args.model_path
+        self.writer = SummaryWriter(log_dir=self.save_path)
 
     def train(self):
         best_val_loss = float('inf')
-        train_loss_all = []
-        val_loss_all = []
-        if not os.path.exists("results"):
-            os.makedirs("results")
-        # 清空文件
-        with open("results/train_loss.txt", "w"):
-            pass
         for epoch in range(self.epochs):
             train_loss = self._train_single_epoch()
             val_loss = self._val_single_epoch()
-            train_loss_all.append(train_loss)
-            val_loss_all.append(val_loss)
 
             print(f"Epoch {epoch + 1}/{self.epochs}: Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
-            with open("results/train_loss.txt", "a") as f:
-                f.write(f"Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}\n")
+            self.writer.add_scalar("Train Loss", train_loss, epoch)
+            self.writer.add_scalar("Val Loss", val_loss, epoch)
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
-                if not os.path.exists("models"):
-                    os.makedirs("models")
-                torch.save(self.model.state_dict(), "models/best_model.pth")
-
-        # 绘制曲线
-        plot_loss(train_loss_all, "Train Loss")
-        plot_loss(val_loss_all, "Val Loss")
+                torch.save(self.model.state_dict(), f"{self.model_path}/best_model.pth")
 
     def _train_single_epoch(self):
         self.model.train()
@@ -104,6 +78,7 @@ class Trainer:
 def test(args, model, test_dataloader, criterion):
     device = args.device
     model.to(device)
+    writer = SummaryWriter(log_dir=args.save_path)
 
     model.eval()
     test_loss = 0
@@ -120,7 +95,4 @@ def test(args, model, test_dataloader, criterion):
 
     test_loss = test_loss / len(test_dataloader)
     print(f"Test Loss: {test_loss:.4f}")
-    if not os.path.exists("results"):
-        os.makedirs("results")
-    with open("results/test_loss.txt", "w") as f:
-        f.write(f"Test Loss: {test_loss:.4f}\n")
+    writer.add_scalar("Test Loss", test_loss)

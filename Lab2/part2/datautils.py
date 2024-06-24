@@ -23,16 +23,15 @@ class Tokenizer:
             self.char2idx[char] = idx
             self.idx2char[idx] = char
 
+        self.vocab_size = len(self.char2idx)
+
     def encode(self, sentence):
         indices = [self.char2idx.get(char, 0) for char in sentence]
-        return torch.tensor([1] + indices + [2], dtype=torch.long)
+        return [1] + indices + [2]
 
     def decode(self, ids):
-        chars = [self.idx2char[_id.item()] for _id in ids]
+        chars = [self.idx2char.get(_id, 0) for _id in ids]
         return ''.join(chars[1:-1])
-
-    def get_vocab_size(self):
-        return len(self.char2idx)
 
 
 class ShakespeareDataset(Dataset):
@@ -43,14 +42,13 @@ class ShakespeareDataset(Dataset):
         self.tokenizer_mode = tokenizer_mode
         self.tokenizer = tokenizer
         if tokenizer_mode == 'custom':
-            self.vocab_size = tokenizer.get_vocab_size()
-            self.encoded_dataset = tokenizer.encode(self.dataset)
+            self.vocab_size = tokenizer.vocab_size
         elif tokenizer_mode == 'bert':
             self.vocab_size = tokenizer.vocab_size
-            self.encoded_dataset = tokenizer.encode(self.dataset, add_special_tokens=True)
         elif tokenizer_mode == 'tiktoken':
-            self.vocab_size = None  # TODO
-            self.encoded_dataset = tokenizer.encode(self.dataset)
+            self.vocab_size = tokenizer.max_token_value + 1
+
+        self.encoded_dataset = tokenizer.encode(self.dataset)
 
     def __len__(self):
         return len(self.encoded_dataset) - self.chunk_size

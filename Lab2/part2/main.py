@@ -14,7 +14,7 @@ import tiktoken
 def main():
     # 加载分词器
     if args.tokenizer_mode == 'custom':
-        tokenizer = Tokenizer(args.datapath)
+        tokenizer = Tokenizer(args.data_path)
     elif args.tokenizer_mode == 'bert':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     elif args.tokenizer_mode == 'tiktoken':
@@ -23,7 +23,7 @@ def main():
         raise ValueError("Invalid tokenizer mode. Choose from 'custom', 'bert', 'tiktoken'.")
 
     # 加载数据集
-    dataset = ShakespeareDataset(args.datapath, args.tokenizer_mode, tokenizer, args.chunk_size)
+    dataset = ShakespeareDataset(args.data_path, args.tokenizer_mode, tokenizer, args.chunk_size)
 
     # 设置词汇表大小
     args.vocab_size = dataset.get_vocab_size()
@@ -58,14 +58,14 @@ def main():
     trainer.train()
 
     # 加载最佳模型并测试
-    model.load_state_dict(torch.load("models/best_model.pth"))
+    model.load_state_dict(torch.load(f"{args.model_path}/best_model.pth"))
     test(args, model, test_dataloader, criterion)
 
 
 def generate_text(input_text: str, max_len: int = 100):
     if args.tokenizer_mode == 'custom':
-        tokenizer = Tokenizer(args.datapath)
-        encoded_text = tokenizer.encode(input_text).unsqueeze(0).to(args.device)
+        tokenizer = Tokenizer(args.data_path)
+        encoded_text = torch.tensor(tokenizer.encode(input_text), dtype=torch.long).unsqueeze(0).to(args.device)
     elif args.tokenizer_mode == 'bert':
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         encoded_text = tokenizer.encode(input_text, add_special_tokens=True, return_tensors='pt').to(args.device)
@@ -76,7 +76,7 @@ def generate_text(input_text: str, max_len: int = 100):
         raise ValueError("Invalid tokenizer mode. Choose from 'custom', 'bert', 'tiktoken'.")
 
     # 加载数据集
-    dataset = ShakespeareDataset(args.datapath, args.tokenizer_mode, tokenizer, args.chunk_size)
+    dataset = ShakespeareDataset(args.data_path, args.tokenizer_mode, tokenizer, args.chunk_size)
 
     # 设置词汇表大小
     args.vocab_size = dataset.get_vocab_size()
@@ -93,7 +93,7 @@ def generate_text(input_text: str, max_len: int = 100):
         dropout=0.1
     ).to(args.device)
 
-    model.load_state_dict(torch.load("models/best_model.pth"))
+    model.load_state_dict(torch.load(f"{args.model_path}/best_model.pth"))
     model.eval()
 
     if args.tokenizer_mode == 'custom':
@@ -108,11 +108,14 @@ def generate_text(input_text: str, max_len: int = 100):
     else:
         raise ValueError("Invalid tokenizer mode. Choose from 'custom', 'bert', 'tiktoken'.")
 
-    print(gen_text)
+    print("Input text:")
+    print(input_text)
+    print("Generated text:")
+    print(gen_text, end='\n\n')
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     generate_text("To be or not to be, that is the question:", max_len=100)
     generate_text("I could pick my lance", max_len=100)
 
