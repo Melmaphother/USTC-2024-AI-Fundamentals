@@ -47,6 +47,7 @@ class MyDecisionTreeClassifier:
         self.max_depth = max_depth
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
+        assert 0 < threshold <= 0.5
         self.threshold = threshold
 
     class MetaTreeNode:
@@ -63,7 +64,7 @@ class MyDecisionTreeClassifier:
         """
         unique_values = np.unique(_X)
         unique_ratio = len(unique_values) / len(_X)
-        if len(_X) < 10:
+        if len(_X) < int(1 / self.threshold):
             threshold = 0.5
         else:
             threshold = self.threshold
@@ -121,9 +122,6 @@ class MyDecisionTreeClassifier:
                         feature_gain = gain
                         feature_threshold = threshold
 
-            # if feature_threshold is None:
-            #     print(sorted_values, sorted_y, total_entropy, subset_entropy, gain)
-
         return feature_gain, feature_threshold
 
     def __best_split(self, _D, _y):
@@ -138,24 +136,25 @@ class MyDecisionTreeClassifier:
             # 如果该特征是离散特征，那么要按特征的值来分割
             feature_values = _D[:, feature_idx]
             feature_type = self.__feature_type(feature_values)
+
+            gain, threshold = self.__calc_information_gain(feature_values, _y, feature_type)
+
             splits = {}  # 键为特征取值，值为子树节点下标
             if feature_type == 'discrete':
+                # 如果该特征是离散特征，那么按特征的值来分割
                 unique_values = np.unique(feature_values)
                 for value in unique_values:
                     indices = _D[:, feature_idx] == value
                     splits[value] = indices
-
-            gain, threshold = self.__calc_information_gain(feature_values, _y, feature_type)
-
-            if feature_type == "continuous" and threshold is None:
-                print(feature_idx, feature_type, feature_values, _y)
-            # 如果该特征是连续特征，此时可以确定最优划分点，也就是可以确定 splits
-            if feature_type == 'continuous':
+            elif feature_type == 'continuous':
+                # 如果该特征是连续特征，此时可以确定最优划分点，按最优划分点分割
                 assert threshold is not None
                 left_indices = _D[:, feature_idx] < threshold
                 right_indices = _D[:, feature_idx] >= threshold
                 splits['left'] = left_indices
                 splits['right'] = right_indices
+            else:
+                raise ValueError('Invalid feature type')
 
             if gain >= best_gain:
                 best_gain = gain
@@ -175,7 +174,7 @@ class MyDecisionTreeClassifier:
         if len(np.unique(_y)) == 1:
             return self.MetaTreeNode(value=_y[0])
 
-        # A 为空或 X 中样本在 A 上取值相同，返回叶子节点
+        # A 为空或样本在 A 上取值相同，返回叶子节点
         if len(np.unique(_X, axis=0)) == 1:
             return self.MetaTreeNode(value=X_max_samples_feature_idx)
 
@@ -186,7 +185,7 @@ class MyDecisionTreeClassifier:
         node = self.MetaTreeNode(feature_idx=best_feature_idx, splits={}, threshold=best_threshold)
         # 遍历每个 splits，建树
         for value, indices in best_splits.items():
-            # 若字树节点样本数不大于 min_samples_leaf，返回叶子节点，将该节点的类别值设为 X 中样本最多的类别
+            # 若子树节点样本数不大于 min_samples_leaf，返回叶子节点，将该节点的类别值设为 X 中样本最多的类别
             if len(indices) <= self.min_samples_leaf:
                 node.splits[value] = self.MetaTreeNode(value=X_max_samples_feature_idx)
             else:
@@ -233,10 +232,10 @@ class MyDecisionTreeClassifier:
 
 if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
-    clf = DecisionTreeClassifier()
+    clf = DecisionTreeClassifier(max_depth=10)
     clf.fit(X_train, y_train)
     print(clf.score(X_test, y_test))  # 0.9408983451536643
 
-    my_clf = MyDecisionTreeClassifier()
+    my_clf = MyDecisionTreeClassifier(max_depth=10)
     my_clf.fit(X_train, y_train)
     print(my_clf.score(X_test, y_test))  # 0.9361702127659575

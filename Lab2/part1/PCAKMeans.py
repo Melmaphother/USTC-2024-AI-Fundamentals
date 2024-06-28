@@ -1,4 +1,3 @@
-from sklearn.datasets import load_wine
 import numpy as np
 import matplotlib.pyplot as plt
 from gensim.models import KeyedVectors
