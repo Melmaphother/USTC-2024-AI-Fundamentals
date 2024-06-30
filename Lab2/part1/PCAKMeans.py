@@ -116,7 +116,7 @@ class KMeans:
 
 if __name__ == '__main__':
     words, data = load_data()
-    pca = KernelPCA()
+    pca = KernelPCA(kernel='sigmoid')
     data_pca = pca.fit_transform(data)
 
     kmeans = KMeans(n_clusters=7)

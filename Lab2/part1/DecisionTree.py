@@ -215,8 +215,7 @@ class MyDecisionTreeClassifier:
                 if feature_value in node.splits.keys():
                     return self.__predict(_x, node.splits[feature_value])
                 else:
-                    # 未知的特征值，返回 X 中样本最多的类别
-                    return node.value
+                    raise ValueError("Unknown feature value")
 
     def predict(self, X):
         return [self.__predict(x, self.tree) for x in X]
@@ -234,8 +233,8 @@ if __name__ == '__main__':
     X_train, X_test, y_train, y_test = load_data()
     clf = DecisionTreeClassifier(max_depth=10)
     clf.fit(X_train, y_train)
-    print(clf.score(X_test, y_test))  # 0.9408983451536643
+    print(clf.score(X_test, y_test))  # 约 0.9385342789598109，不稳定
 
     my_clf = MyDecisionTreeClassifier(max_depth=10)
     my_clf.fit(X_train, y_train)
-    print(my_clf.score(X_test, y_test))  # 0.9361702127659575
+    print(my_clf.score(X_test, y_test))  # 0.9361702127659575，稳定
