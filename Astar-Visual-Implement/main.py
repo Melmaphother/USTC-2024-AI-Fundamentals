@@ -1,0 +1,50 @@
+from AStar import AStar
+from Map import Map
+from visualize import plot_map, plot_points
+
+
+def main():
+    map = Map(is_auto_set_start_end=False, is_randomly_set_obstacles=False)
+    map.set_start_end((10, 35, 45, 45))
+    map.set_horizontal_obstacles(50, (0, 0))
+    map.set_vertical_obstacles(50, (0, 0))
+    map.set_horizontal_obstacles(50, (0, 49))
+    map.set_vertical_obstacles(50, (49, 0))
+    map.set_vertical_obstacles(30, (5, 10))
+    map.remove_obstacles((5, 14))
+    map.remove_obstacles((5, 15))
+    map.set_horizontal_obstacles(14, (5, 10))
+    map.set_horizontal_obstacles(8, (5, 40))
+    map.set_vertical_obstacles(5, (10, 40))
+    map.set_vertical_obstacles(16, (12, 24))
+    map.set_horizontal_obstacles(6, (12, 24))
+    map.set_vertical_obstacles(14, (18, 10))
+    map.set_vertical_obstacles(4, (12, 0))
+    map.set_vertical_obstacles(4, (12, 6))
+    map.set_vertical_obstacles(7, (18, 35))
+    map.set_vertical_obstacles(5, (18, 45))
+    map.set_horizontal_obstacles(7, (18, 18))
+    map.set_vertical_obstacles(10, (24, 0))
+    map.set_vertical_obstacles(4, (24, 14))
+    map.set_horizontal_obstacles(10, (18, 35))
+    map.set_horizontal_obstacles(7, (31, 35))
+    map.set_vertical_obstacles(5, (35, 45))
+    map.set_vertical_obstacles(15, (35, 26))
+    map.set_vertical_obstacles(16, (35, 7))
+    map.set_vertical_obstacles(5, (35, 0))
+    map.set_vertical_obstacles(5, (40, 45))
+    map.set_vertical_obstacles(15, (40, 35))
+    map.set_horizontal_obstacles(1, (39, 35))
+    map.set_horizontal_obstacles(5, (35, 18))
+    map.set_horizontal_obstacles(8, (42, 18))
+    map.set_horizontal_obstacles(3, (40, 40))
+    map.set_horizontal_obstacles(4, (46, 40))
+    # plot_points(map.obstacles)
+    astar = AStar(map)
+    path = astar.find_path()
+    # print(path)
+    plot_map(map, path, map.obstacles)
+
+
+if __name__ == '__main__':
+    main()
