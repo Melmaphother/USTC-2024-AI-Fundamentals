@@ -576,11 +576,32 @@
 
 使用三句话验证生成的结果：
 
+> 事实上 `I could pick my lance` 是语料内部的语句，在划分训练集、验证集、测试集时是随机划分的。所以并不能保证这句话不在训练集内。所以我采用了新的一句经典名句 `To be or not to be, that is the question:` 来测试模型的效果。
+
 1. To be or not to be, that is the question:
 2. I could pick my lance
 3. Would the nobility lay aside their ruth, And let me use my sword, I'll make a quarry. With thousands of these quarter'd slaves, as high As I could pick my lance.
 
 分别代表：莎士比亚经典名句、实验框架测试语句、测试语句的扩展，下面介绍三种分词方式下的结果：
+
+> 注：
+>
+> 以下结果均在**下列参数**中训练和测试：
+>
+> | 参数           | 值        |
+> | -------------- | --------- |
+> | chunk_size     | 50        |
+> | batch_size     | 128       |
+> | embed_dim      | 64        |
+> | n_layers       | 3         |
+> | n_heads        | 4         |
+> | num_experts    | 4         |
+> | active_experts | 2         |
+> | epochs         | 20        |
+> | learning rate  | $10^{-3}$ |
+> | dropout        | 0.1       |
+>
+> 后续有更大参数的测试效果。
 
 1. 字符分词
 
@@ -653,6 +674,54 @@
 1. 三种分词方式的训练过程都是比较平稳的，验证集损失也是逐渐下降的，说明模型的训练是有效的；
 2. 相比而言，tiktoken 分词器的效果最好，bert 分词器次之，字符分词最差，这也符合预期，因为 bert 分词器和 tiktoken 分词器都是经过大量训练的，而字符分词的参数规模太小，无法学习到足够的信息。
 3. 而 tiktoken 相比于 bert 更好，已经具有了**对话**的特性，并且词义表达也更加合理。可能是由于我们的任务属于生成式任务，并不属于表征型任务，所以基于生成式任务的 gpt 模型所使用的 tiktoken 分词器效果比 bert 更好。
+
+#### 拓展
+
+修改参数如下：
+
+| 参数           | 原值 | 修改后的值 |
+| -------------- | ---- | ---------- |
+| embed_dim      | 64   | 256        |
+| num_experts    | 4    | 16         |
+| active_experts | 2    | 8          |
+| epochs         | 20   | 8          |
+
+使用 tiktoken 分词器，重新训练并测试出的结果如下：
+
+- 训练集损失
+
+  ![](assets/large-tiktoken-train.png)
+
+- 验证集损失
+
+  ![](assets/large-tiktoken-val.png)
+
+- 测试集测试结果
+
+  测试损失：0.0930
+
+- 生成情况
+
+  - input text：`I could pick my lance `
+
+  - Generated text：
+
+    ```txtand how it is a cur air 
+    Will have laugh!
+    Not like enough. For a forfeit trample'd a sword:
+     desires he is a kiss the his chamber of the duke:
+    Command to such a lucky.
+    
+    LUCIO:
+    Why, a 
+    ```
+
+  ![](assets/large-tiktoken-gen.png)
+
+总结：
+
+- 将参数变大而语料不增大，刚开始训练就出现了严重的过拟合效应，所以将 epoch 改为 8 左右，尽量避免过拟合
+- 参数变大的效果显然要比参数小的效果好，因为模型的注意力强很多，同时拥有更强的上下文表征能能力。
 
 ## bonus
 
